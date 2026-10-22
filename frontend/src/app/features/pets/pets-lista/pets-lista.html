@@ -1,0 +1,57 @@
+
+<section class="pets-container">
+  <header class="pets-header">
+    <div>
+      <h1>Pets cadastrados</h1>
+      <p>Gerencie os animais cadastrados no PetShop.</p>
+    </div>
+
+    <button type="button" class="botao-novo" (click)="novoPet()">
+      + Cadastrar pet
+    </button>
+  </header>
+
+  @if (formularioAberto()) {
+    <app-pet-form
+      [petInicial]="petEmEdicao()"
+      (salvo)="finalizarFormulario()"
+      (cancelar)="finalizarFormulario()"
+    />
+  }
+
+  <div class="filtro">
+    <label for="filtro-especie">Filtrar por espécie:</label>
+
+    <select
+      id="filtro-especie"
+      [value]="especieSelecionada()"
+      (change)="selecionarEspecie($any($event.target).value)"
+    >
+      <option value="todas">Todas as espécies</option>
+      @for (especie of especies; track especie) {
+        <option [value]="especie">{{ especie }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="pets-lista">
+    @for (pet of petsFiltrados(); track pet._id) {
+      <div class="pet-item">
+        <app-pet-card [pet]="pet" />
+
+        <div class="pet-acoes">
+          <button type="button" (click)="editarPet(pet)">Editar</button>
+          <button
+            type="button"
+            class="botao-excluir"
+            (click)="excluirPet(pet._id)"
+          >
+            Excluir
+          </button>
+        </div>
+      </div>
+    } @empty {
+      <p class="sem-pets">Nenhum pet encontrado para essa espécie.</p>
+    }
+  </div>
+</section>

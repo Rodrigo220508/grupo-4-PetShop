@@ -1,0 +1,85 @@
+
+.pets-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pets-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pets-header h1 {
+  margin: 0;
+  color: #172554;
+  font-size: 1.8rem;
+}
+
+.pets-header p {
+  margin: 0.5rem 0 0;
+  color: #64748b;
+}
+
+.botao-novo,
+.pet-acoes button {
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 7px;
+  background: #1d4ed8;
+  color: white;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filtro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 320px;
+}
+
+.filtro label {
+  font-weight: 600;
+  color: #334155;
+}
+
+.filtro select {
+  padding: 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  font: inherit;
+}
+
+.pets-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 1rem;
+}
+
+.pet-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pet-acoes {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pet-acoes .botao-excluir {
+  background: #b91c1c;
+}
+
+.sem-pets {
+  color: #64748b;
+  padding: 1rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+}

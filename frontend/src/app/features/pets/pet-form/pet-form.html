@@ -1,0 +1,50 @@
+
+<form [formGroup]="formulario" (ngSubmit)="salvar()" class="pet-form">
+  <h2>{{ petInicial() ? 'Editar pet' : 'Cadastrar pet' }}</h2>
+
+  <label for="nome">Nome *</label>
+  <input id="nome" type="text" formControlName="nome" maxlength="60" />
+  @if (formulario.controls.nome.touched && formulario.controls.nome.invalid) {
+    <small class="erro">Informe um nome entre 2 e 60 caracteres.</small>
+  }
+
+  <label for="especie">Espécie *</label>
+  <select id="especie" formControlName="especie">
+    @for (especie of especies; track especie) {
+      <option [value]="especie">{{ especie }}</option>
+    }
+  </select>
+
+  <label for="raca">Raça</label>
+  <input id="raca" type="text" formControlName="raca" maxlength="60" />
+
+  <label for="dataNascimento">Data de nascimento</label>
+  <input id="dataNascimento" type="date" formControlName="dataNascimento" />
+  @if (dataFutura()) {
+    <small class="erro">A data de nascimento não pode ser futura.</small>
+  }
+
+  <label for="tutor">ID do tutor *</label>
+  <select id="tutor" formControlName="tutor">
+    <option value="">Selecione um tutor</option>
+    <option value="1">Tutor 1</option>
+    <option value="2">Tutor 2</option>
+  </select>
+  @if (formulario.controls.tutor.touched && formulario.controls.tutor.invalid) {
+    <small class="erro">Selecione um tutor.</small>
+  }
+
+  <label class="ativo">
+    <input type="checkbox" formControlName="ativo" />
+    Pet ativo
+  </label>
+
+  <div class="acoes">
+    <button type="submit">
+      {{ petInicial() ? 'Salvar alterações' : 'Cadastrar pet' }}
+    </button>
+    <button type="button" class="botao-cancelar" (click)="cancelar.emit()">
+      Cancelar
+    </button>
+  </div>
+</form>
