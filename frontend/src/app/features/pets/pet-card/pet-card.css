@@ -1,0 +1,35 @@
+
+.pet-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #d9e0e8;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.pet-info h3 {
+  margin: 0 0 0.75rem;
+  color: #172554;
+}
+
+.pet-info p {
+  margin: 0.35rem 0;
+  color: #475569;
+}
+
+.status {
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status.inativo {
+  background: #fee2e2;
+  color: #991b1b;
+}
