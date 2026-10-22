@@ -1,0 +1,51 @@
+
+<section class="pagina">
+  <header class="cabecalho">
+    <div>
+      <h1>Tutores</h1>
+      <p>Gerencie os tutores cadastrados no Pet Shop.</p>
+    </div>
+
+    <a class="botao" routerLink="/tutores/novo">
+      Novo tutor
+    </a>
+  </header>
+
+  <label for="busca">Pesquisar tutor por nome</label>
+  <input
+    id="busca"
+    type="search"
+    [(ngModel)]="termoBusca"
+    placeholder="Digite o nome do tutor..."
+  />
+
+  @if (carregando) {
+    <p role="status">Carregando tutores...</p>
+  } @else if (erro) {
+    <p role="alert">{{ erro }}</p>
+    <button type="button" (click)="carregarTutores()">Tentar novamente</button>
+  } @else if (tutoresFiltrados.length === 0) {
+    <p>Nenhum tutor encontrado.</p>
+  } @else {
+    <div class="tabela-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Telefone</th>
+            <th>E-mail</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (tutor of tutoresFiltrados; track tutor._id) {
+            <tr>
+              <td>{{ tutor.nome }}</td>
+              <td>{{ tutor.telefone }}</td>
+              <td>{{ tutor.email }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
