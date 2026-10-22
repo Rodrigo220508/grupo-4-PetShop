@@ -1,0 +1,79 @@
+
+.pagina {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.cabecalho h1 {
+  margin: 0 0 8px;
+}
+
+.cabecalho p {
+  margin: 0;
+  color: #666;
+}
+
+.botao {
+  display: inline-block;
+  padding: 10px 16px;
+  background: #2563eb;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.pagina label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.pagina input {
+  width: 100%;
+  max-width: 420px;
+  box-sizing: border-box;
+  padding: 11px;
+  margin-bottom: 24px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.tabela-container {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th,
+td {
+  padding: 14px;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background: #f3f4f6;
+}
+
+@media (max-width: 600px) {
+  .cabecalho {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pagina {
+    padding: 16px;
+  }
+}
