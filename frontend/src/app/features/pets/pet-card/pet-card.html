@@ -1,0 +1,36 @@
+<article class="pet-card">
+  <div class="pet-info">
+    <h3>{{ pet().nome }}</h3>
+
+    <p>
+      <strong>Espécie:</strong>
+      {{ pet().especie }}
+    </p>
+
+    @if (pet().raca) {
+      <p>
+        <strong>Raça:</strong>
+        {{ pet().raca }}
+      </p>
+    }
+
+    @if (pet().dataNascimento) {
+      <p>
+        <strong>Nascimento:</strong>
+        {{ pet().dataNascimento }}
+      </p>
+    }
+
+    <p>
+      <strong>Tutor:</strong>
+      {{ pet().tutor }}
+    </p>
+  </div>
+
+  <span
+    class="status"
+    [class.inativo]="!pet().ativo"
+  >
+    {{ pet().ativo ? 'Ativo' : 'Inativo' }}
+  </span>
+</article>
