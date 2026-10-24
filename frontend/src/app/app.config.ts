@@ -8,22 +8,35 @@ import { routes } from './app.routes';
 import { ProdutosApiService } from './features/produtos/services/produtos-api.service';
 import { ProdutosMockService } from './features/produtos/services/produtos-mock.service';
 import { ProdutosService } from './features/produtos/services/produtos.service';
-
+import { TutoresMockService } from './features/tutores/services/tutores-mock.service';
+import { TutoresService } from './features/tutores/services/tutores.service';
+import { PetsMockService } from './features/pets/services/pets-mock.service';
+import { PetsService } from './features/pets/services/pets.service';
 // Formatos brasileiros para moeda, datas e números (R$ 8,90)
 registerLocaleData(localePt);
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(),
-    { provide: LOCALE_ID, useValue: 'pt-BR' },
+  provideBrowserGlobalErrorListeners(),
+  provideRouter(routes, withComponentInputBinding()),
+  provideHttpClient(),
+  { provide: LOCALE_ID, useValue: 'pt-BR' },
 
-    // Escolhe a implementação do serviço conforme o environment.
-    // Cada aluno registra aqui o serviço do seu módulo, do mesmo jeito.
-    {
-      provide: ProdutosService,
-      useClass: environment.usarMock ? ProdutosMockService : ProdutosApiService,
-    },
+  {
+    provide: ProdutosService,
+    useClass: environment.usarMock
+      ? ProdutosMockService
+      : ProdutosApiService,
+  },
+
+  {
+    provide: TutoresService,
+    useClass: TutoresMockService,
+  },
+
+   {
+    provide: PetsService,
+    useClass: PetsMockService,
+  },
   ],
 };

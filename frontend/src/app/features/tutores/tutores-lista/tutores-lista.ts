@@ -2,13 +2,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Tutor } from '../tutor.model';
 import { TutoresService } from '../services/tutores.service';
 
 @Component({
   selector: 'app-tutores-lista',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './tutores-lista.html',
   styleUrl: './tutores-lista.css',
 })

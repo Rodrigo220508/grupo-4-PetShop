@@ -1,64 +1,23 @@
 
-import { Injectable, signal } from '@angular/core';
-import { Pet, PetEntrada } from '../pet.model';
+import { Observable } from 'rxjs';
+import { Especie, Pet, PetEntrada } from '../pet.model';
 
-@Injectable({
-  providedIn: 'root',
-})
-export class PetsService {
-  // Lista inicial fictícia para desenvolver o módulo sem o backend.
-  private readonly petsSignal = signal<Pet[]>([
-    {
-      _id: '1',
-      nome: 'Rex',
-      especie: 'cachorro',
-      raca: 'Labrador',
-      dataNascimento: '2022-05-10',
-      tutor: '1',
-      ativo: true,
-    },
-    {
-      _id: '2',
-      nome: 'Mimi',
-      especie: 'gato',
-      raca: 'Siamês',
-      dataNascimento: '2023-08-15',
-      tutor: '2',
-      ativo: true,
-    },
-  ]);
+/**
+ * CONTRATO do serviço de pets.
+ * A lista e o formulário dependem apenas desta classe abstrata.
+ * O app.config.ts decide qual implementação será utilizada.
+ */
+export abstract class PetsService {
+  abstract listar(especie?: Especie): Observable<Pet[]>;
 
-  // Expõe a lista como um signal somente para leitura.
-  readonly pets = this.petsSignal.asReadonly();
+  abstract buscarPorId(id: string): Observable<Pet>;
 
-  // Retorna um pet específico pelo ID.
-  buscarPorId(id: string): Pet | undefined {
-    return this.petsSignal().find((pet) => pet._id === id);
-  }
+  abstract criar(dados: PetEntrada): Observable<Pet>;
 
-  // Cadastra um novo pet.
-  criar(dados: PetEntrada): void {
-    const novoPet: Pet = {
-      ...dados,
-      _id: crypto.randomUUID(),
-    };
+  abstract atualizar(
+    id: string,
+    dados: Partial<PetEntrada>,
+  ): Observable<Pet>;
 
-    this.petsSignal.update((pets) => [...pets, novoPet]);
-  }
-
-  // Atualiza os dados de um pet existente.
-  atualizar(id: string, dados: PetEntrada): void {
-    this.petsSignal.update((pets) =>
-      pets.map((pet) =>
-        pet._id === id ? { ...pet, ...dados, _id: id } : pet,
-      ),
-    );
-  }
-
-  // Exclui um pet da lista.
-  excluir(id: string): void {
-    this.petsSignal.update((pets) =>
-      pets.filter((pet) => pet._id !== id),
-    );
-  }
+  abstract remover(id: string): Observable<void>;
 }
