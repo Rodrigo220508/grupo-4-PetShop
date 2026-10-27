@@ -2,6 +2,16 @@
 <form [formGroup]="formulario" (ngSubmit)="salvar()" class="pet-form">
   <h2>{{ petInicial() ? 'Editar pet' : 'Cadastrar pet' }}</h2>
 
+  
+@if (erro()) {
+  <p class="erro" role="alert">{{ erro() }}</p>
+}
+
+@if (salvando()) {
+  <p role="status">Salvando pet...</p>
+}
+
+
   <label for="nome">Nome *</label>
   <input id="nome" type="text" formControlName="nome" maxlength="60" />
   @if (formulario.controls.nome.touched && formulario.controls.nome.invalid) {
@@ -40,9 +50,15 @@
   </label>
 
   <div class="acoes">
-    <button type="submit">
-      {{ petInicial() ? 'Salvar alterações' : 'Cadastrar pet' }}
-    </button>
+    <button type="submit" [disabled]="salvando()">
+  {{
+    salvando()
+      ? 'Salvando...'
+      : petInicial()
+        ? 'Salvar alterações'
+        : 'Cadastrar pet'
+  }}
+</button>
     <button type="button" class="botao-cancelar" (click)="cancelar.emit()">
       Cancelar
     </button>
