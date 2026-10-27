@@ -1,4 +1,3 @@
-
 <section class="pagina">
   <header class="cabecalho">
     <div>
@@ -11,41 +10,60 @@
     </a>
   </header>
 
-  <label for="busca">Pesquisar tutor por nome</label>
-  <input
-    id="busca"
-    type="search"
-    [(ngModel)]="termoBusca"
-    placeholder="Digite o nome do tutor..."
-  />
+  <div class="filtro">
+    <label for="busca">Pesquisar tutor por nome</label>
+    <input
+      id="busca"
+      type="search"
+      [(ngModel)]="termoBusca"
+      placeholder="Digite o nome do tutor..."
+    />
+  </div>
 
-  @if (carregando) {
+  @if (carregando()) {
     <p role="status">Carregando tutores...</p>
-  } @else if (erro) {
-    <p role="alert">{{ erro }}</p>
-    <button type="button" (click)="carregarTutores()">Tentar novamente</button>
-  } @else if (tutoresFiltrados.length === 0) {
-    <p>Nenhum tutor encontrado.</p>
+  } @else if (erro()) {
+    <p role="alert">{{ erro() }}</p>
+
+    <button type="button" (click)="carregarTutores()">
+      Tentar novamente
+    </button>
   } @else {
-    <div class="tabela-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Telefone</th>
-            <th>E-mail</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (tutor of tutoresFiltrados; track tutor._id) {
-            <tr>
-              <td>{{ tutor.nome }}</td>
-              <td>{{ tutor.telefone }}</td>
-              <td>{{ tutor.email }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+    @if (sucesso()) {
+      <p role="status">{{ sucesso() }}</p>
+    }
+
+    @if (tutoresFiltrados.length === 0) {
+      <p>Nenhum tutor encontrado.</p>
+    } @else {
+      <div class="lista-tutores">
+        @for (tutor of tutoresFiltrados; track tutor._id) {
+          <app-tutor-card
+  [tutor]="tutor"
+  (selecionar)="selecionarTutor($event)"
+  (editar)="editarTutor($event)"
+   (excluir)="excluirTutor($event)"
+/>
+        }
+      </div>
+    }
+  }
+
+  @if (tutorSelecionado) {
+    <section class="detalhes" aria-live="polite">
+      <h2>Tutor selecionado</h2>
+
+      <p><strong>Nome:</strong> {{ tutorSelecionado.nome }}</p>
+      <p><strong>Telefone:</strong> {{ tutorSelecionado.telefone }}</p>
+      <p><strong>E-mail:</strong> {{ tutorSelecionado.email }}</p>
+
+      @if (tutorSelecionado.endereco) {
+        <p><strong>Endereço:</strong> {{ tutorSelecionado.endereco }}</p>
+      }
+
+      <button type="button" (click)="limparSelecao()">
+        Fechar detalhes
+      </button>
+    </section>
   }
 </section>

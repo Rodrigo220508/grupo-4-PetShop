@@ -9,6 +9,11 @@ export const TUTORES_ROUTES: Routes = [
     title: 'Novo tutor',
   },
   {
+    path: ':id/editar',
+    component: TutoresFormulario,
+    title: 'Editar tutor',
+  },
+  {
     path: '',
     component: TutoresLista,
     title: 'Tutores',

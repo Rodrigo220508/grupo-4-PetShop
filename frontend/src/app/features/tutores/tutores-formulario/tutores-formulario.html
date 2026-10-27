@@ -1,70 +1,141 @@
 <section class="pagina">
   <header class="cabecalho">
     <div>
-      <h1>Novo tutor</h1>
-      <p>Preencha os dados para cadastrar um tutor.</p>
+      <h1>{{ idTutor ? 'Editar tutor' : 'Novo tutor' }}</h1>
+      <p>
+        {{
+          idTutor
+            ? 'Atualize os dados do tutor.'
+            : 'Preencha os dados para cadastrar um tutor.'
+        }}
+      </p>
     </div>
   </header>
 
-  <form (ngSubmit)="salvar()">
-    <div class="campo">
-      <label for="nome">Nome completo *</label>
-      <input
-        id="nome"
-        name="nome"
-        type="text"
-        [(ngModel)]="nome"
-        required
-        placeholder="Digite o nome completo"
-      />
-    </div>
+  @if (carregando()) {
+    <p role="status">Carregando dados do tutor...</p>
+  } @else {
+    <form [formGroup]="formulario" (ngSubmit)="salvar()" novalidate>
+      <div class="campo">
+        <label for="nome">Nome completo *</label>
+        <input
+          id="nome"
+          type="text"
+          formControlName="nome"
+          placeholder="Digite o nome completo"
+          autocomplete="name"
+        />
 
-    <div class="campo">
-      <label for="telefone">Telefone *</label>
-      <input
-        id="telefone"
-        name="telefone"
-        type="tel"
-        [(ngModel)]="telefone"
-        required
-        placeholder="(00) 00000-0000"
-      />
-    </div>
+        @if (
+          formulario.controls.nome.touched &&
+          formulario.controls.nome.hasError('required')
+        ) {
+          <p class="erro" role="alert">O nome é obrigatório.</p>
+        } @else if (
+          formulario.controls.nome.touched &&
+          formulario.controls.nome.hasError('minlength')
+        ) {
+          <p class="erro" role="alert">
+            O nome deve ter pelo menos 3 caracteres.
+          </p>
+        } @else if (
+          formulario.controls.nome.touched &&
+          formulario.controls.nome.hasError('maxlength')
+        ) {
+          <p class="erro" role="alert">
+            O nome deve ter no máximo 80 caracteres.
+          </p>
+        }
+      </div>
 
-    <div class="campo">
-      <label for="email">E-mail *</label>
-      <input
-        id="email"
-        name="email"
-        type="email"
-        [(ngModel)]="email"
-        required
-        email
-        placeholder="exemplo@email.com"
-      />
-    </div>
+      <div class="campo">
+        <label for="telefone">Telefone *</label>
+        <input
+          id="telefone"
+          type="tel"
+          formControlName="telefone"
+          placeholder="(51) 99999-9999"
+          autocomplete="tel"
+        />
 
-    <div class="campo">
-      <label for="endereco">Endereço</label>
-      <input
-        id="endereco"
-        name="endereco"
-        type="text"
-        [(ngModel)]="endereco"
-        placeholder="Rua, número e bairro"
-      />
-    </div>
+        @if (
+          formulario.controls.telefone.touched &&
+          formulario.controls.telefone.hasError('required')
+        ) {
+          <p class="erro" role="alert">O telefone é obrigatório.</p>
+        } @else if (
+          formulario.controls.telefone.touched &&
+          formulario.controls.telefone.hasError('pattern')
+        ) {
+          <p class="erro" role="alert">
+            Use o formato (51) 99999-9999.
+          </p>
+        }
+      </div>
 
-    @if (erro) {
-      <p role="alert" class="erro">{{ erro }}</p>
-    }
+      <div class="campo">
+        <label for="email">E-mail *</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="exemplo@email.com"
+          autocomplete="email"
+        />
 
-    <div class="acoes">
-      <a routerLink="/tutores" class="botao-secundario">Cancelar</a>
+        @if (
+          formulario.controls.email.touched &&
+          formulario.controls.email.hasError('required')
+        ) {
+          <p class="erro" role="alert">O e-mail é obrigatório.</p>
+        } @else if (
+          formulario.controls.email.touched &&
+          formulario.controls.email.hasError('email')
+        ) {
+          <p class="erro" role="alert">Digite um e-mail válido.</p>
+        }
+      </div>
 
-      <button type="submit" [disabled]="salvando">
-        {{ salvando ? 'Salvando...' : 'Salvar tutor' }}
-      </button>
-    </div>
-  </form>
+      <div class="campo">
+        <label for="endereco">Endereço</label>
+        <textarea
+          id="endereco"
+          formControlName="endereco"
+          rows="3"
+          maxlength="150"
+          placeholder="Rua das Flores, 120 - Centro"
+          autocomplete="street-address"
+        ></textarea>
+
+        @if (
+          formulario.controls.endereco.touched &&
+          formulario.controls.endereco.hasError('maxlength')
+        ) {
+          <p class="erro" role="alert">
+            O endereço deve ter no máximo 150 caracteres.
+          </p>
+        }
+      </div>
+
+      @if (erro()) {
+        <p class="erro" role="alert">{{ erro() }}</p>
+      }
+
+      <div class="acoes">
+        <a routerLink="/tutores" class="botao-secundario">
+          Cancelar
+        </a>
+
+        <button type="submit" [disabled]="salvando()">
+          {{
+            salvando()
+              ? 'Salvando...'
+              : idTutor
+                ? 'Salvar alterações'
+                : 'Salvar tutor'
+          }}
+        </button>
+      </div>
+    </form>
+  }
 </section>

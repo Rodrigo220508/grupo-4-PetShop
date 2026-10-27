@@ -1,0 +1,36 @@
+<article class="cartao">
+  <div class="dados">
+    <h2>{{ tutor().nome }}</h2>
+
+    <p>
+      <strong>Telefone:</strong>
+      {{ tutor().telefone }}
+    </p>
+
+    <p>
+      <strong>E-mail:</strong>
+      {{ tutor().email }}
+    </p>
+
+    @if (tutor().endereco) {
+      <p>
+        <strong>Endereço:</strong>
+        {{ tutor().endereco }}
+      </p>
+    }
+  </div>
+
+  <div class="acoes">
+    <button type="button" (click)="selecionarTutor()">
+      Ver detalhes
+    </button>
+
+    <button type="button" (click)="editarTutor()">
+      Editar
+    </button>
+
+    <button type="button" (click)="excluirTutor()">
+      Excluir
+    </button>
+  </div>
+</article>
