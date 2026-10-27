@@ -1,0 +1,70 @@
+<section class="pagina">
+  <header class="cabecalho">
+    <div>
+      <h1>Novo tutor</h1>
+      <p>Preencha os dados para cadastrar um tutor.</p>
+    </div>
+  </header>
+
+  <form (ngSubmit)="salvar()">
+    <div class="campo">
+      <label for="nome">Nome completo *</label>
+      <input
+        id="nome"
+        name="nome"
+        type="text"
+        [(ngModel)]="nome"
+        required
+        placeholder="Digite o nome completo"
+      />
+    </div>
+
+    <div class="campo">
+      <label for="telefone">Telefone *</label>
+      <input
+        id="telefone"
+        name="telefone"
+        type="tel"
+        [(ngModel)]="telefone"
+        required
+        placeholder="(00) 00000-0000"
+      />
+    </div>
+
+    <div class="campo">
+      <label for="email">E-mail *</label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        [(ngModel)]="email"
+        required
+        email
+        placeholder="exemplo@email.com"
+      />
+    </div>
+
+    <div class="campo">
+      <label for="endereco">Endereço</label>
+      <input
+        id="endereco"
+        name="endereco"
+        type="text"
+        [(ngModel)]="endereco"
+        placeholder="Rua, número e bairro"
+      />
+    </div>
+
+    @if (erro) {
+      <p role="alert" class="erro">{{ erro }}</p>
+    }
+
+    <div class="acoes">
+      <a routerLink="/tutores" class="botao-secundario">Cancelar</a>
+
+      <button type="submit" [disabled]="salvando">
+        {{ salvando ? 'Salvando...' : 'Salvar tutor' }}
+      </button>
+    </div>
+  </form>
+</section>
