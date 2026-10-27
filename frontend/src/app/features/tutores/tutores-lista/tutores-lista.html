@@ -1,47 +1,52 @@
-
 <section class="pagina">
-  <header class="cabecalho">
-    <div>
-      <h1>Tutores</h1>
-      <p>Gerencie os tutores cadastrados no Pet Shop.</p>
-    </div>
-
-    <a class="botao" routerLink="/tutores/novo">
-      Novo tutor
-    </a>
-  </header>
-
-  <label for="busca">Pesquisar tutor por nome</label>
-  <input
-    id="busca"
-    type="search"
-    [(ngModel)]="termoBusca"
-    placeholder="Digite o nome do tutor..."
-  />
-
+  <div class="cabecalho-pagina">
+    <h1>Tutores</h1>
+    <a class="botao" routerLink="novo">+ Novo tutor</a>
+  </div>
+  <div class="campo">
+    <label for="busca">Pesquisar tutor por nome</label
+    ><input
+      id="busca"
+      type="search"
+      [(ngModel)]="termoBusca"
+      placeholder="Digite parte do nome..."
+    />
+  </div>
+  @if (sucesso) {
+    <p class="alerta sucesso" role="status">{{ sucesso }}</p>
+  }
+  @if (erro) {
+    <p class="alerta erro" role="alert">
+      {{ erro }} <button type="button" (click)="carregarTutores()">Tentar novamente</button>
+    </p>
+  }
   @if (carregando) {
     <p role="status">Carregando tutores...</p>
-  } @else if (erro) {
-    <p role="alert">{{ erro }}</p>
-    <button type="button" (click)="carregarTutores()">Tentar novamente</button>
   } @else if (tutoresFiltrados.length === 0) {
-    <p>Nenhum tutor encontrado.</p>
+    <p class="vazio">Nenhum tutor encontrado.</p>
   } @else {
     <div class="tabela-container">
-      <table>
+      <table class="tabela">
         <thead>
           <tr>
             <th>Nome</th>
             <th>Telefone</th>
             <th>E-mail</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
-          @for (tutor of tutoresFiltrados; track tutor._id) {
+          @for (t of tutoresFiltrados; track t._id) {
             <tr>
-              <td>{{ tutor.nome }}</td>
-              <td>{{ tutor.telefone }}</td>
-              <td>{{ tutor.email }}</td>
+              <td>{{ t.nome }}</td>
+              <td>{{ t.telefone }}</td>
+              <td>{{ t.email }}</td>
+              <td>
+                <div class="acoes">
+                  <a class="botao secundario" [routerLink]="[t._id, 'editar']">Editar</a
+                  ><button class="botao perigo" type="button" (click)="excluir(t)">Excluir</button>
+                </div>
+              </td>
             </tr>
           }
         </tbody>

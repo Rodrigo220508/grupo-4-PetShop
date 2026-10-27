@@ -1,0 +1,56 @@
+<div class="cabecalho-pagina">
+  <h1>Profissionais</h1>
+  <a class="botao" routerLink="novo">+ Novo profissional</a>
+</div>
+<div class="barra-filtros">
+  <label for="filtro-prof">Função</label
+  ><select id="filtro-prof" [value]="filtro()" (change)="filtrar($any($event.target).value)">
+    <option value="">Todas</option>
+    @for (f of funcoes; track f) {
+      <option [value]="f">{{ f }}</option>
+    }
+  </select>
+</div>
+@if (sucesso()) {
+  <p class="alerta sucesso" role="status">{{ sucesso() }}</p>
+}
+@if (erro()) {
+  <p class="alerta erro" role="alert">
+    {{ erro() }} <button type="button" (click)="carregar()">Tentar novamente</button>
+  </p>
+}
+@if (carregando()) {
+  <p role="status">Carregando profissionais...</p>
+} @else if (filtrados().length === 0) {
+  <p class="vazio">Nenhum profissional encontrado.</p>
+} @else {
+  <div class="tabela-container">
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Função</th>
+          <th>Telefone</th>
+          <th>E-mail</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of filtrados(); track p._id) {
+          <tr>
+            <td>{{ p.nome }}</td>
+            <td>{{ p.funcao }}</td>
+            <td>{{ p.telefone }}</td>
+            <td>{{ p.email }}</td>
+            <td>
+              <div class="acoes">
+                <a class="botao secundario" [routerLink]="[p._id, 'editar']">Editar</a
+                ><button class="botao perigo" type="button" (click)="excluir(p)">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

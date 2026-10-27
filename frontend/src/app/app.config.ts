@@ -12,31 +12,39 @@ import { TutoresMockService } from './features/tutores/services/tutores-mock.ser
 import { TutoresService } from './features/tutores/services/tutores.service';
 import { PetsMockService } from './features/pets/services/pets-mock.service';
 import { PetsService } from './features/pets/services/pets.service';
+import { AtendimentosService } from './features/atendimentos/services/atendimentos.service';
+import { AtendimentosMockService } from './features/atendimentos/services/atendimentos-mock.service';
+import { ServicosService } from './features/servicos/services/servicos.service';
+import { ServicosMockService } from './features/servicos/services/servicos-mock.service';
+import { ProfissionaisService } from './features/profissionais/services/profissionais.service';
+import { ProfissionaisMockService } from './features/profissionais/services/profissionais-mock.service';
 // Formatos brasileiros para moeda, datas e números (R$ 8,90)
 registerLocaleData(localePt);
 
 export const appConfig: ApplicationConfig = {
   providers: [
-  provideBrowserGlobalErrorListeners(),
-  provideRouter(routes, withComponentInputBinding()),
-  provideHttpClient(),
-  { provide: LOCALE_ID, useValue: 'pt-BR' },
+    provideBrowserGlobalErrorListeners(),
+    provideRouter(routes, withComponentInputBinding()),
+    provideHttpClient(),
+    { provide: LOCALE_ID, useValue: 'pt-BR' },
 
-  {
-    provide: ProdutosService,
-    useClass: environment.usarMock
-      ? ProdutosMockService
-      : ProdutosApiService,
-  },
+    {
+      provide: ProdutosService,
+      useClass: environment.usarMock ? ProdutosMockService : ProdutosApiService,
+    },
 
-  {
-    provide: TutoresService,
-    useClass: TutoresMockService,
-  },
+    {
+      provide: TutoresService,
+      useClass: TutoresMockService,
+    },
 
-   {
-    provide: PetsService,
-    useClass: PetsMockService,
-  },
+    {
+      provide: PetsService,
+      useClass: PetsMockService,
+    },
+    // C1: três módulos de demonstração, ainda sem API NestJS correspondente.
+    { provide: AtendimentosService, useClass: AtendimentosMockService },
+    { provide: ServicosService, useClass: ServicosMockService },
+    { provide: ProfissionaisService, useClass: ProfissionaisMockService },
   ],
 };

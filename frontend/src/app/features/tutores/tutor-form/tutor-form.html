@@ -1,0 +1,60 @@
+<h1>{{ id() ? 'Editar tutor' : 'Novo tutor' }}</h1>
+@if (erro()) {
+  <p class="alerta erro" role="alert">{{ erro() }}</p>
+}
+@if (carregando()) {
+  <p role="status">Carregando tutor...</p>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="salvar()" class="cartao formulario" novalidate>
+    <div class="campo">
+      <label for="nome-t">Nome *</label
+      ><input
+        id="nome-t"
+        formControlName="nome"
+        maxlength="80"
+        [class.invalido]="invalido('nome')"
+      />
+      @if (invalido('nome')) {
+        <small class="msg-erro">Entre 3 e 80 caracteres.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="telefone-t">Telefone *</label
+      ><input
+        id="telefone-t"
+        type="tel"
+        placeholder="(51) 99999-9999"
+        formControlName="telefone"
+        [class.invalido]="invalido('telefone')"
+      />
+      @if (invalido('telefone')) {
+        <small class="msg-erro">Use (51) 99999-9999.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="email-t">E-mail *</label
+      ><input
+        id="email-t"
+        type="email"
+        formControlName="email"
+        [class.invalido]="invalido('email')"
+      />
+      @if (invalido('email')) {
+        <small class="msg-erro">Informe um e-mail válido.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="endereco-t">Endereço</label
+      ><textarea id="endereco-t" rows="3" maxlength="150" formControlName="endereco"></textarea>
+      @if (invalido('endereco')) {
+        <small class="msg-erro">Máximo de 150 caracteres.</small>
+      }
+    </div>
+    <div class="acoes-form">
+      <a routerLink="/tutores" class="botao secundario">Cancelar</a
+      ><button class="botao" type="submit" [disabled]="salvando()">
+        {{ salvando() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </form>
+}

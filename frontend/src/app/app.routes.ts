@@ -16,23 +16,38 @@ export const routes: Routes = [
       {
         path: 'produtos',
         loadChildren: () =>
-          import('./features/produtos/produtos.routes').then(
-            (m) => m.PRODUTOS_ROUTES,
+          import('./features/produtos/produtos.routes').then((m) => m.PRODUTOS_ROUTES),
+      },
+      {
+        path: 'atendimentos',
+        loadChildren: () =>
+          import('./features/atendimentos/atendimentos.routes').then((m) => m.ATENDIMENTOS_ROUTES),
+      },
+      {
+        path: 'servicos',
+        loadChildren: () =>
+          import('./features/servicos/servicos.routes').then((m) => m.SERVICOS_ROUTES),
+      },
+      {
+        path: 'profissionais',
+        loadChildren: () =>
+          import('./features/profissionais/profissionais.routes').then(
+            (m) => m.PROFISSIONAIS_ROUTES,
           ),
       },
       {
-        path: 'pets',
+        path: 'relatorios',
         loadChildren: () =>
-          import('./features/pets/pets.routes').then(
-            (m) => m.PETS_ROUTES,
-          ),
+          import('./features/relatorios/relatorios.routes').then((m) => m.RELATORIOS_ROUTES),
+      },
+      {
+        path: 'pets',
+        loadChildren: () => import('./features/pets/pets.routes').then((m) => m.PETS_ROUTES),
       },
       {
         path: 'tutores',
         loadChildren: () =>
-          import('./features/tutores/services/tutores.routes').then(
-            (m) => m.TUTORES_ROUTES,
-          ),
+          import('./features/tutores/services/tutores.routes').then((m) => m.TUTORES_ROUTES),
       },
     ],
   },

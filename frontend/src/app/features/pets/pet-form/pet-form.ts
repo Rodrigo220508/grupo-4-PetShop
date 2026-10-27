@@ -1,12 +1,9 @@
-
 import { Component, effect, inject, input, output, signal } from '@angular/core';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ESPECIES, Pet } from '../pet.model';
 import { PetsService } from '../services/pets.service';
+import { TutoresService } from '../../tutores/services/tutores.service';
+import { Tutor } from '../../tutores/tutor.model';
 
 @Component({
   selector: 'app-pet-form',
@@ -18,6 +15,8 @@ import { PetsService } from '../services/pets.service';
 export class PetForm {
   private readonly fb = inject(FormBuilder);
   private readonly petsService = inject(PetsService);
+  private readonly tutoresService = inject(TutoresService);
+  readonly tutores = signal<Tutor[]>([]);
 
   readonly especies = ESPECIES;
   readonly petInicial = input<Pet | null>(null);
@@ -37,6 +36,10 @@ export class PetForm {
   });
 
   constructor() {
+    this.tutoresService.listar().subscribe({
+      next: (tutores) => this.tutores.set(tutores),
+      error: () => this.erro.set('Não foi possível carregar os tutores.'),
+    });
     effect(() => {
       const pet = this.petInicial();
 
