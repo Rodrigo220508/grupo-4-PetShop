@@ -33,74 +33,6 @@
       <p role="status">{{ sucesso() }}</p>
     }
 
-    @if (tutoresFiltrados.length === 0) {
-      <p>Nenhum tutor encontrado.</p>
-    } @else {
-      <div class="lista-tutores">
-        @for (tutor of tutoresFiltrados; track tutor._id) {
-          <app-tutor-card
-  [tutor]="tutor"
-  (selecionar)="selecionarTutor($event)"
-  (editar)="editarTutor($event)"
-   (excluir)="excluirTutor($event)"
-/>
-        }
-      </div>
-    }
-  }
-
-  @if (tutorSelecionado) {
-    <section class="detalhes" aria-live="polite">
-      <h2>Tutor selecionado</h2>
-
-      <p><strong>Nome:</strong> {{ tutorSelecionado.nome }}</p>
-      <p><strong>Telefone:</strong> {{ tutorSelecionado.telefone }}</p>
-      <p><strong>E-mail:</strong> {{ tutorSelecionado.email }}</p>
-
-      @if (tutorSelecionado.endereco) {
-        <p><strong>Endereço:</strong> {{ tutorSelecionado.endereco }}</p>
-      }
-
-      <button type="button" (click)="limparSelecao()">
-        Fechar detalhes
-      </button>
-    </section>
-  }
-<section class="pagina">
-  <header class="cabecalho">
-    <div>
-      <h1>Tutores</h1>
-      <p>Gerencie os tutores cadastrados no Pet Shop.</p>
-    </div>
-
-    <a class="botao" routerLink="/tutores/novo">
-      Novo tutor
-    </a>
-  </header>
-
-  <div class="filtro">
-    <label for="busca">Pesquisar tutor por nome</label>
-    <input
-      id="busca"
-      type="search"
-      [(ngModel)]="termoBusca"
-      placeholder="Digite o nome do tutor..."
-    />
-  </div>
-
-  @if (carregando()) {
-    <p role="status">Carregando tutores...</p>
-  } @else if (erro()) {
-    <p role="alert">{{ erro() }}</p>
-
-    <button type="button" (click)="carregarTutores()">
-      Tentar novamente
-    </button>
-  } @else {
-    @if (sucesso()) {
-      <p role="status">{{ sucesso() }}</p>
-    }
-
     <div class="lista-tutores">
       @for (tutor of tutoresFiltrados; track tutor._id) {
         <app-tutor-card
@@ -110,7 +42,7 @@
           (excluir)="excluirTutor($event)"
         />
       } @empty {
-        <p>Nenhum tutor encontrado.</p>
+        <p class="vazio">Nenhum tutor encontrado.</p>
       }
     </div>
   }
