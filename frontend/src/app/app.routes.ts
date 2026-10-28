@@ -21,6 +21,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'pets',
+        loadChildren: () =>
+          import('./features/pets/pets.routes').then(
+            (m) => m.PETS_ROUTES,
+          ),
+      },
+      {
         path: 'tutores',
         loadChildren: () =>
           import('./features/tutores/services/tutores.routes').then(

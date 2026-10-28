@@ -7,6 +7,7 @@ import {
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
+
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
 
@@ -17,7 +18,9 @@ import { ProdutosService } from './features/produtos/services/produtos.service';
 import { TutoresMockService } from './features/tutores/services/tutores-mock.service';
 import { TutoresService } from './features/tutores/services/tutores.service';
 
-// Formatos brasileiros para moeda, datas e números
+import { PetsMockService } from './features/pets/services/pets-mock.service';
+import { PetsService } from './features/pets/services/pets.service';
+
 registerLocaleData(localePt);
 
 export const appConfig: ApplicationConfig = {
@@ -33,10 +36,13 @@ export const appConfig: ApplicationConfig = {
         ? ProdutosMockService
         : ProdutosApiService,
     },
-
     {
-  provide: TutoresService,
-  useExisting: TutoresMockService,
-},
+      provide: TutoresService,
+      useExisting: TutoresMockService,
+    },
+    {
+      provide: PetsService,
+      useClass: PetsMockService,
+    },
   ],
 };

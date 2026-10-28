@@ -1,5 +1,5 @@
 
-import { Component, effect, inject, input, output } from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import {
   FormBuilder,
   ReactiveFormsModule,
@@ -24,6 +24,9 @@ export class PetForm {
   readonly salvo = output<void>();
   readonly cancelar = output<void>();
 
+  readonly salvando = signal(false);
+  readonly erro = signal('');
+
   readonly formulario = this.fb.nonNullable.group({
     nome: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(60)]],
     especie: ['cachorro', Validators.required],
@@ -33,7 +36,7 @@ export class PetForm {
     ativo: [true],
   });
 
-    constructor() {
+  constructor() {
     effect(() => {
       const pet = this.petInicial();
 
@@ -56,17 +59,15 @@ export class PetForm {
           ativo: true,
         });
       }
+
+      this.erro.set('');
     });
   }
 
   dataFutura(): boolean {
     const data = this.formulario.controls.dataNascimento.value;
 
-    if (!data) {
-      return false;
-    }
-
-    return data > new Date().toISOString().slice(0, 10);
+    return !!data && data > new Date().toISOString().slice(0, 10);
   }
 
   salvar(): void {
@@ -75,24 +76,32 @@ export class PetForm {
       return;
     }
 
+    this.salvando.set(true);
+    this.erro.set('');
+
     const dados = this.formulario.getRawValue();
     const pet = this.petInicial();
 
-    
-const entrada = {
-  ...dados,
-  especie: dados.especie as (typeof ESPECIES)[number],
-  raca: dados.raca || undefined,
-  dataNascimento: dados.dataNascimento || undefined,
-};
+    const entrada = {
+      ...dados,
+      especie: dados.especie as (typeof ESPECIES)[number],
+      raca: dados.raca || undefined,
+      dataNascimento: dados.dataNascimento || undefined,
+    };
 
+    const operacao = pet
+      ? this.petsService.atualizar(pet._id, entrada)
+      : this.petsService.criar(entrada);
 
-    if (pet) {
-      this.petsService.atualizar(pet._id, entrada);
-    } else {
-      this.petsService.criar(entrada);
-    }
-
-    this.salvo.emit();
+    operacao.subscribe({
+      next: () => {
+        this.salvando.set(false);
+        this.salvo.emit();
+      },
+      error: (erro: Error) => {
+        this.salvando.set(false);
+        this.erro.set(erro.message || 'Não foi possível salvar o pet.');
+      },
+    });
   }
 }
