@@ -55,7 +55,7 @@
     </div>
     <div class="acoes-form">
       <a routerLink="/servicos" class="botao secundario">Cancelar</a
-      ><button type="submit" class="botao" [disabled]="salvando()">
+      ><button type="submit" class="botao" [disabled]="form.invalid || salvando()">
         {{ salvando() ? 'Salvando...' : 'Salvar' }}
       </button>
     </div>

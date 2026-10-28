@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { AuthMockService } from '../../core/auth/auth-mock.service';
 import { RouterLink } from '@angular/router';
 import { RelatoriosPainel } from '../../features/relatorios/relatorios-painel/relatorios-painel';
 @Component({
@@ -23,7 +24,13 @@ import { RelatoriosPainel } from '../../features/relatorios/relatorios-painel/re
         <p>Ver totais e indicadores.</p></a
       >
     </div>
-    <app-relatorios-painel />
+    @if (auth.estaLogado()) {
+      <app-relatorios-painel />
+    } @else {
+      <p class="alerta">Entre com a conta demonstrativa para visualizar os indicadores.
+        <a routerLink="/login">Acessar login</a>
+      </p>
+    }
   `,
 })
-export class Inicio {}
+export class Inicio { protected readonly auth = inject(AuthMockService); }

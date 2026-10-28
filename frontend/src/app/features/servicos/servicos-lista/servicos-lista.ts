@@ -2,6 +2,7 @@ import { CurrencyPipe } from '@angular/common';
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ServicosService } from '../services/servicos.service';
+import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
 import { Servico, CATEGORIAS_SERVICO, CategoriaServico } from '../servico.model';
 @Component({
   selector: 'app-servicos-lista',
@@ -10,6 +11,7 @@ import { Servico, CATEGORIAS_SERVICO, CategoriaServico } from '../servico.model'
 })
 export class ServicosLista implements OnInit {
   private readonly api = inject(ServicosService);
+  private readonly confirmacao = inject(ConfirmacaoService);
   protected readonly categorias = CATEGORIAS_SERVICO;
   protected readonly filtro = signal<CategoriaServico | ''>('');
   protected readonly itens = signal<Servico[]>([]);
@@ -39,8 +41,14 @@ export class ServicosLista implements OnInit {
   protected filtrar(c: string): void {
     this.filtro.set(c as CategoriaServico | '');
   }
-  protected excluir(item: Servico): void {
-    if (!confirm(`Inativar o serviço "${item.nome}"?`)) return;
+  protected async excluir(item: Servico): Promise<void> {
+    const aceitou = await this.confirmacao.confirmar({
+      titulo: 'Inativar serviço?',
+      descricao: `Tem certeza que deseja inativar "${item.nome}"? Ele deixará de aparecer entre os serviços ativos.`,
+      textoConfirmar: 'Sim, inativar',
+      tipo: 'perigo',
+    });
+    if (!aceitou) return;
     this.erro.set('');
     this.sucesso.set('');
     this.api.remover(item._id).subscribe({

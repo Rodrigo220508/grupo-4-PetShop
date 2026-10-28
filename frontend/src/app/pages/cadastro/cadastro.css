@@ -1,0 +1,3 @@
+/* Complementa o mesmo padrão visual da tela de login. */
+.formulario-login { max-width: 550px; }
+.formulario-login .campo-login { margin-bottom: 16px; }

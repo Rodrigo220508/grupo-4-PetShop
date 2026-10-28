@@ -1,5 +1,5 @@
 import { Component, inject, input, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { idDe } from '../../../core/models/referencia';
@@ -10,6 +10,13 @@ import { Pet } from '../../pets/pet.model';
 import { Servico } from '../../servicos/servico.model';
 import { Profissional } from '../../profissionais/profissional.model';
 import { AtendimentosService } from '../services/atendimentos.service';
+function agendamentoFuturo(campo: AbstractControl): ValidationErrors | null {
+  const valor = String(campo.value ?? '');
+  if (!valor) return null;
+  const data = new Date(valor);
+  return Number.isNaN(data.getTime()) || data <= new Date() ? { dataInvalida: true } : null;
+}
+
 @Component({
   selector: 'app-atendimento-form',
   imports: [ReactiveFormsModule, RouterLink],
@@ -33,7 +40,7 @@ export class AtendimentoForm implements OnInit {
     pet: ['', Validators.required],
     servico: ['', Validators.required],
     profissional: ['', Validators.required],
-    dataHora: ['', Validators.required],
+    dataHora: ['', [Validators.required, agendamentoFuturo]],
     observacoes: ['', Validators.maxLength(300)],
   });
   ngOnInit(): void {

@@ -3,6 +3,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { idDe, Referencia } from '../../../core/models/referencia';
+import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
 import { PetsService } from '../../pets/services/pets.service';
 import { ServicosService } from '../../servicos/services/servicos.service';
 import { ProfissionaisService } from '../../profissionais/services/profissionais.service';
@@ -15,6 +16,7 @@ import { AtendimentosService } from '../services/atendimentos.service';
 })
 export class AtendimentosLista implements OnInit {
   private readonly api = inject(AtendimentosService);
+  private readonly confirmacao = inject(ConfirmacaoService);
   private readonly petsService = inject(PetsService);
   private readonly servicosService = inject(ServicosService);
   private readonly profissionaisService = inject(ProfissionaisService);
@@ -75,8 +77,19 @@ export class AtendimentosLista implements OnInit {
       },
     });
   }
-  protected avancar(a: Atendimento, destino: Status): void {
-    if (!confirm(`Alterar o status do atendimento para "${destino}"?`)) return;
+  protected async avancar(a: Atendimento, destino: Status): Promise<void> {
+    if (this.operando()) return;
+    const cancelamento = destino === 'cancelado';
+    const verbo = destino === 'em_atendimento' ? 'Iniciar' : destino === 'concluido' ? 'Concluir' : 'Cancelar';
+    const aceitou = await this.confirmacao.confirmar({
+      titulo: cancelamento ? 'Cancelar atendimento?' : `${verbo} atendimento?`,
+      descricao: cancelamento
+        ? `Tem certeza que deseja cancelar o atendimento de ${this.nome(a.pet, 'pet')}?`
+        : `Confirma a mudança de status do atendimento de ${this.nome(a.pet, 'pet')} para "${destino.replace('_', ' ')}"?`,
+      textoConfirmar: cancelamento ? 'Sim, cancelar' : `Sim, ${verbo.toLowerCase()}`,
+      tipo: cancelamento ? 'perigo' : 'padrao',
+    });
+    if (!aceitou) return;
     this.operando.set(true);
     this.erro.set('');
     this.sucesso.set('');

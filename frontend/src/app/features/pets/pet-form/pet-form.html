@@ -48,7 +48,7 @@
   </label>
 
   <div class="acoes">
-    <button type="submit" [disabled]="salvando()">
+    <button type="submit" [disabled]="formulario.invalid || salvando()">
       {{ salvando() ? 'Salvando...' : petInicial() ? 'Salvar alterações' : 'Cadastrar pet' }}
     </button>
     <button type="button" class="botao-cancelar" (click)="cancelar.emit()">Cancelar</button>

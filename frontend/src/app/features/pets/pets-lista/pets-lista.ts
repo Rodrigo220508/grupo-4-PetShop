@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PetsService } from '../services/pets.service';
 import { PetCard } from '../pet-card/pet-card';
+import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
 import { ESPECIES, Especie, Pet } from '../pet.model';
 @Component({
   selector: 'app-pets-lista',
@@ -11,6 +12,7 @@ import { ESPECIES, Especie, Pet } from '../pet.model';
 })
 export class PetsLista {
   private readonly api = inject(PetsService);
+  private readonly confirmacao = inject(ConfirmacaoService);
   readonly especies = ESPECIES;
   readonly especieSelecionada = signal<Especie | 'todas'>('todas');
   readonly pets = signal<Pet[]>([]);
@@ -42,8 +44,15 @@ export class PetsLista {
   selecionarEspecie(v: string): void {
     this.especieSelecionada.set(v as Especie | 'todas');
   }
-  excluirPet(id: string): void {
-    if (!confirm('Tem certeza que deseja excluir este pet?')) return;
+  async excluirPet(id: string): Promise<void> {
+    const nome = this.pets().find((pet) => pet._id === id)?.nome ?? 'este pet';
+    const aceitou = await this.confirmacao.confirmar({
+      titulo: 'Excluir pet?',
+      descricao: `Tem certeza que deseja excluir ${nome}? Esta ação não pode ser desfeita.`,
+      textoConfirmar: 'Sim, excluir',
+      tipo: 'perigo',
+    });
+    if (!aceitou) return;
     this.erro.set('');
     this.sucesso.set('');
     this.api.remover(id).subscribe({

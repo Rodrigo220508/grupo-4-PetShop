@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Tutor } from '../tutor.model';
 import { TutoresService } from '../services/tutores.service';
+import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
 @Component({
   selector: 'app-tutores-lista',
   imports: [FormsModule, RouterLink],
@@ -15,7 +16,7 @@ export class TutoresLista implements OnInit {
   carregando = false;
   erro = '';
   sucesso = '';
-  constructor(private readonly api: TutoresService) {}
+  constructor(private readonly api: TutoresService, private readonly confirmacao: ConfirmacaoService) {}
   ngOnInit(): void {
     this.carregarTutores();
   }
@@ -37,8 +38,14 @@ export class TutoresLista implements OnInit {
     const t = this.termoBusca.trim().toLocaleLowerCase();
     return this.tutores.filter((x) => x.nome.toLocaleLowerCase().includes(t));
   }
-  excluir(t: Tutor): void {
-    if (!confirm(`Excluir tutor "${t.nome}"?`)) return;
+  async excluir(t: Tutor): Promise<void> {
+    const aceitou = await this.confirmacao.confirmar({
+      titulo: 'Excluir tutor?',
+      descricao: `Tem certeza que deseja excluir o tutor "${t.nome}"? Esta ação não pode ser desfeita.`,
+      textoConfirmar: 'Sim, excluir',
+      tipo: 'perigo',
+    });
+    if (!aceitou) return;
     this.erro = '';
     this.sucesso = '';
     this.api.remover(t._id).subscribe({

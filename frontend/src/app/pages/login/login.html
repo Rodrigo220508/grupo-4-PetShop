@@ -1,0 +1,48 @@
+<div class="acesso">
+  <section class="apresentacao" aria-labelledby="titulo-boas-vindas">
+    <div class="simbolo" aria-hidden="true">🐾</div>
+    <p class="sobretitulo">PETSHOP · CHECKPOINT C1</p>
+    <h1 id="titulo-boas-vindas">Bem-vindo ao PetShop</h1>
+    <p>Faça login para experimentar as funcionalidades demonstrativas do projeto.</p>
+    <div class="destaques"><span>✓ Formulários reativos</span><span>✓ Autenticação mock</span></div>
+  </section>
+  <section class="formulario-login" aria-labelledby="titulo-login">
+    @if (auth.estaLogado()) {
+      <h2 id="titulo-login">Você está conectado!</h2>
+      <p class="texto-auxiliar">Olá, {{ auth.usuario()?.nome }}.</p>
+      <a class="botao botao-largo" routerLink="/">Ir ao início</a>
+      <button class="botao secundario botao-largo" type="button" (click)="sair()">Sair da conta</button>
+    } @else {
+      <p class="etapa">ACESSO DEMONSTRATIVO</p>
+      <h2 id="titulo-login">Entrar</h2>
+      @if (cadastroRealizado) { <p class="alerta sucesso" role="status">Conta criada! Faça login para continuar.</p> }
+      <form [formGroup]="formulario" (ngSubmit)="entrar()" novalidate>
+        <div class="campo-login">
+          <label for="email-login">E-mail *</label>
+          <input id="email-login" type="email" autocomplete="username" formControlName="email"
+            placeholder="voce@exemplo.com" [attr.aria-invalid]="formulario.controls.email.invalid && formulario.controls.email.touched" />
+          @if (formulario.controls.email.invalid && formulario.controls.email.touched) {
+            <small class="erro-campo">Digite um e-mail válido.</small>
+          }
+        </div>
+        <div class="campo-login">
+          <label for="senha-login">Senha *</label>
+          <div class="senha-container">
+            <input id="senha-login" [type]="mostrarSenha() ? 'text' : 'password'" autocomplete="current-password"
+              formControlName="senha" [attr.aria-invalid]="formulario.controls.senha.invalid && formulario.controls.senha.touched" />
+            <button type="button" class="mostrar" (click)="mostrarSenha.update(v => !v)"
+              [attr.aria-label]="mostrarSenha() ? 'Ocultar senha' : 'Mostrar senha'">{{ mostrarSenha() ? 'Ocultar' : 'Mostrar' }}</button>
+          </div>
+          @if (formulario.controls.senha.invalid && formulario.controls.senha.touched) {
+            <small class="erro-campo">Informe a senha.</small>
+          }
+        </div>
+        @if (erro()) { <p class="alerta erro" role="alert">{{ erro() }}</p> }
+        <button class="botao botao-largo botao-entrar" type="submit" [disabled]="formulario.invalid">Entrar no PetShop</button>
+      </form>
+      <p class="texto-auxiliar">Conta de teste: <strong>admin@petshop.demo</strong> / <strong>Petshop123!</strong></p>
+      <p class="aviso">Não tem uma conta? <a routerLink="/cadastro">Cadastrar usuário</a>.</p>
+      <p class="aviso">Este login é um mock de aula, sem API nem banco de dados. Não use senhas reais.</p>
+    }
+  </section>
+</div>

@@ -1,8 +1,9 @@
-/*
- * Estilos do GRUPO.
- * Este arquivo é carregado depois do styles.css, então o que for definido
- * aqui vence. Quem cuida do padrão visual é o papel UX/UI e Acessibilidade.
- *
- * Exemplo: trocar a cor principal do sistema
- * :root { --cor-primaria: #6a1b9a; }
- */
+/* Personalização visual da demonstração. Altere aqui as cores sem mudar styles.css. */
+:root {
+  --cor-primaria: #173c52;
+  --cor-secundaria: #147d77;
+  --cor-destaque: #f0b94b;
+}
+button, a.botao { transition: background-color .15s ease, box-shadow .15s ease; }
+:focus-visible { outline: 3px solid var(--cor-destaque); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { button, a.botao { transition: none; } }
