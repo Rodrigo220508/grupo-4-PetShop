@@ -126,7 +126,10 @@
           Cancelar
         </a>
 
-        <button type="submit" [disabled]="salvando()">
+       <button
+  type="submit"
+  [disabled]="formulario.invalid || salvando()"
+>
           {{
             salvando()
               ? 'Salvando...'
