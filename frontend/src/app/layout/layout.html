@@ -4,15 +4,29 @@
 </header>
 
 <div class="corpo">
-  
-<nav class="menu" aria-label="Menu principal">
-  <a routerLink="/" routerLinkActive="ativo" [routerLinkActiveOptions]="{ exact: true }">Início</a>
-  <a routerLink="/produtos" routerLinkActive="ativo">Produtos</a>
-  <a routerLink="/pets" routerLinkActive="ativo">Pets</a>
-  <a routerLink="/tutores" routerLinkActive="ativo">Tutores</a>
-  <!-- TODO (aula 02): um link para o módulo de cada aluno -->
-</nav>
--
+  <nav class="menu" aria-label="Menu principal">
+    <a
+      routerLink="/"
+      routerLinkActive="ativo"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      Início
+    </a>
+
+    <a routerLink="/produtos" routerLinkActive="ativo">
+      Produtos
+    </a>
+
+    <a routerLink="/pets" routerLinkActive="ativo">
+      Pets
+    </a>
+
+    <a routerLink="/tutores" routerLinkActive="ativo">
+      Tutores
+    </a>
+
+    <!-- TODO (aula 02): um link para o módulo de cada aluno -->
+  </nav>
 
   <main class="conteudo">
     <router-outlet />
