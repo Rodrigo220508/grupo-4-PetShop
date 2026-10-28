@@ -33,14 +33,14 @@
   }
 
   <div class="filtro">
-    <label for="filtro-especie">Filtrar por espécie:</label>
+    <label for="filtro-especie">Filtrar por espÃ©cie:</label>
 
     <select
       id="filtro-especie"
       [value]="especieSelecionada()"
       (change)="selecionarEspecie($any($event.target).value)"
     >
-      <option value="todas">Todas as espécies</option>
+      <option value="todas">Todas as espÃ©cies</option>
       @for (especie of especies; track especie) {
         <option [value]="especie">{{ especie }}</option>
       }
@@ -50,21 +50,17 @@
   <div class="pets-lista">
     @for (pet of petsFiltrados(); track pet._id) {
       <div class="pet-item">
-        <app-pet-card [pet]="pet" />
-
-        <div class="pet-acoes">
-          <button type="button" (click)="editarPet(pet)">Editar</button>
-          <button
-            type="button"
-            class="botao-excluir"
-            (click)="excluirPet(pet._id)"
-          >
-            Excluir
-          </button>
-        </div>
+        <app-pet-card
+          [pet]="pet"
+          (editar)="editarPet($event)"
+          (excluir)="excluirPet($event)"
+        />
       </div>
     } @empty {
-      <p class="sem-pets">Nenhum pet encontrado para essa espécie.</p>
+      <p class="sem-pets">
+        Nenhum pet encontrado para essa espÃ©cie.
+      </p>
     }
   </div>
+
 </section>

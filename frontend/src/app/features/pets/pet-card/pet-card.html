@@ -1,3 +1,4 @@
+
 <article class="pet-card">
   <div class="pet-info">
     <h3>{{ pet().nome }}</h3>
@@ -27,10 +28,21 @@
     </p>
   </div>
 
-  <span
-    class="status"
-    [class.inativo]="!pet().ativo"
-  >
+  <span class="status" [class.inativo]="!pet().ativo">
     {{ pet().ativo ? 'Ativo' : 'Inativo' }}
   </span>
+
+  <div class="pet-acoes">
+    <button type="button" (click)="editar.emit(pet())">
+      Editar
+    </button>
+
+    <button
+      type="button"
+      class="botao-excluir"
+      (click)="excluir.emit(pet()._id)"
+    >
+      Excluir
+    </button>
+  </div>
 </article>
