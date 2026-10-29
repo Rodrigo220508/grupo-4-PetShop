@@ -4,9 +4,10 @@ import { PetsService } from '../services/pets.service';
 import { PetCard } from '../pet-card/pet-card';
 import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
 import { ESPECIES, Especie, Pet } from '../pet.model';
+
 @Component({
   selector: 'app-pets-lista',
-  imports: [RouterLink, PetCard],
+  imports: [PetCard, RouterLink],
   templateUrl: './pets-lista.html',
   styleUrl: './pets-lista.css',
 })
