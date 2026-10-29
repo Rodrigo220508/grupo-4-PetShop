@@ -1,0 +1,34 @@
+<dialog
+  #dialogo
+  class="dialogo-confirmacao"
+  aria-labelledby="titulo-confirmacao"
+  aria-describedby="descricao-confirmacao"
+  (cancel)="cancelar($event)"
+  (close)="confirmacao.responder(false)"
+  (click)="cliqueNoFundo($event)"
+>
+  @if (confirmacao.pedido(); as pedido) {
+    <div class="dialogo-conteudo">
+      <span
+        class="simbolo"
+        [class.simbolo-perigo]="pedido.tipo === 'perigo'"
+        aria-hidden="true"
+      >{{ pedido.tipo === 'perigo' ? '!' : '?' }}</span>
+      <h2 id="titulo-confirmacao">{{ pedido.titulo }}</h2>
+      <p id="descricao-confirmacao">{{ pedido.descricao }}</p>
+      <div class="dialogo-acoes">
+        <button type="button" class="botao-voltar" autofocus (click)="confirmacao.responder(false)">
+          Voltar
+        </button>
+        <button
+          type="button"
+          class="botao-confirmar"
+          [class.botao-perigo]="pedido.tipo === 'perigo'"
+          (click)="confirmacao.responder(true)"
+        >
+          {{ pedido.textoConfirmar }}
+        </button>
+      </div>
+    </div>
+  }
+</dialog>

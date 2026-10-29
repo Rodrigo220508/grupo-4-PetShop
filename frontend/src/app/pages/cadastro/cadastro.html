@@ -1,0 +1,51 @@
+<div class="acesso">
+  <section class="apresentacao" aria-labelledby="titulo-boas-vindas">
+    <div class="simbolo" aria-hidden="true">🐾</div>
+    <p class="sobretitulo">PETSHOP · CHECKPOINT C1</p>
+    <h1 id="titulo-boas-vindas">Criar uma conta demonstrativa</h1>
+    <p>Experimente cadastro de usuário com validações reativas e mensagens de feedback.</p>
+  </section>
+  <section class="formulario-login" aria-labelledby="titulo-cadastro">
+    <p class="etapa">CADASTRO MOCK</p>
+    <h2 id="titulo-cadastro">Cadastrar usuário</h2>
+    <form [formGroup]="form" (ngSubmit)="cadastrar()" novalidate>
+      <div class="campo-login">
+        <label for="nome-cadastro">Nome completo *</label>
+        <input id="nome-cadastro" autocomplete="name" formControlName="nome" maxlength="80"
+          [attr.aria-invalid]="protegido('nome')" />
+        @if (protegido('nome')) { <small class="erro-campo">Informe de 3 a 80 caracteres.</small> }
+      </div>
+      <div class="campo-login">
+        <label for="email-cadastro">E-mail *</label>
+        <input id="email-cadastro" type="email" autocomplete="email" formControlName="email"
+          [attr.aria-invalid]="protegido('email')" />
+        @if (protegido('email')) { <small class="erro-campo">Informe um e-mail válido.</small> }
+      </div>
+      <div class="campo-login">
+        <label for="senha-cadastro">Senha *</label>
+        <div class="senha-container">
+          <input id="senha-cadastro" [type]="mostrarSenha() ? 'text' : 'password'" formControlName="senha"
+            autocomplete="new-password" [attr.aria-invalid]="protegido('senha')" />
+          <button class="mostrar" type="button" (click)="mostrarSenha.update(v => !v)"
+            [attr.aria-label]="mostrarSenha() ? 'Ocultar senha' : 'Mostrar senha'">
+            {{ mostrarSenha() ? 'Ocultar' : 'Mostrar' }}
+          </button>
+        </div>
+        @if (protegido('senha')) { <small class="erro-campo">Mínimo de 8 caracteres, com letras e números.</small> }
+      </div>
+      <div class="campo-login">
+        <label for="confirma-cadastro">Confirmar senha *</label>
+        <input id="confirma-cadastro" type="password" autocomplete="new-password" formControlName="confirmacao"
+          [attr.aria-invalid]="protegido('confirmacao') || (form.hasError('senhasDiferentes') && form.controls.confirmacao.touched)" />
+        @if (protegido('confirmacao')) { <small class="erro-campo">Confirme a senha.</small> }
+        @if (form.hasError('senhasDiferentes') && form.controls.confirmacao.touched) {
+          <small class="erro-campo">As senhas precisam ser iguais.</small>
+        }
+      </div>
+      @if (erro()) { <p class="alerta erro" role="alert">{{ erro() }}</p> }
+      <button class="botao botao-largo" type="submit" [disabled]="form.invalid">Criar conta demonstrativa</button>
+    </form>
+    <p class="aviso">Já tem uma conta? <a routerLink="/login">Entrar</a>.</p>
+    <p class="aviso">Conta de demonstração: dados em memória, sem persistência. Use informações fictícias; um novo cadastro se perde ao atualizar a página.</p>
+  </section>
+</div>

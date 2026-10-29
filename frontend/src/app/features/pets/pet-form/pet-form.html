@@ -1,16 +1,13 @@
-
 <form [formGroup]="formulario" (ngSubmit)="salvar()" class="pet-form">
   <h2>{{ petInicial() ? 'Editar pet' : 'Cadastrar pet' }}</h2>
 
-  
-@if (erro()) {
-  <p class="erro" role="alert">{{ erro() }}</p>
-}
+  @if (erro()) {
+    <p class="erro" role="alert">{{ erro() }}</p>
+  }
 
-@if (salvando()) {
-  <p role="status">Salvando pet...</p>
-}
-
+  @if (salvando()) {
+    <p role="status">Salvando pet...</p>
+  }
 
   <label for="nome">Nome *</label>
   <input id="nome" type="text" formControlName="nome" maxlength="60" />
@@ -37,8 +34,9 @@
   <label for="tutor">ID do tutor *</label>
   <select id="tutor" formControlName="tutor">
     <option value="">Selecione um tutor</option>
-    <option value="1">Tutor 1</option>
-    <option value="2">Tutor 2</option>
+    @for (t of tutores(); track t._id) {
+      <option [value]="t._id">{{ t.nome }}</option>
+    }
   </select>
   @if (formulario.controls.tutor.touched && formulario.controls.tutor.invalid) {
     <small class="erro">Selecione um tutor.</small>
@@ -50,17 +48,9 @@
   </label>
 
   <div class="acoes">
-    <button type="submit" [disabled]="salvando()">
-  {{
-    salvando()
-      ? 'Salvando...'
-      : petInicial()
-        ? 'Salvar alterações'
-        : 'Cadastrar pet'
-  }}
-</button>
-    <button type="button" class="botao-cancelar" (click)="cancelar.emit()">
-      Cancelar
+    <button type="submit" [disabled]="formulario.invalid || salvando()">
+      {{ salvando() ? 'Salvando...' : petInicial() ? 'Salvar alterações' : 'Cadastrar pet' }}
     </button>
+    <button type="button" class="botao-cancelar" (click)="cancelar.emit()">Cancelar</button>
   </div>
 </form>

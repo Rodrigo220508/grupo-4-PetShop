@@ -1,0 +1,56 @@
+<div class="cabecalho-pagina">
+  <h1>Serviços</h1>
+  <a class="botao" routerLink="novo">+ Novo serviço</a>
+</div>
+<div class="barra-filtros">
+  <label for="filtro-servico">Categoria</label
+  ><select id="filtro-servico" [value]="filtro()" (change)="filtrar($any($event.target).value)">
+    <option value="">Todas</option>
+    @for (c of categorias; track c) {
+      <option [value]="c">{{ c }}</option>
+    }
+  </select>
+</div>
+@if (sucesso()) {
+  <p role="status" class="alerta sucesso">{{ sucesso() }}</p>
+}
+@if (erro()) {
+  <p role="alert" class="alerta erro">
+    {{ erro() }} <button (click)="carregar()" type="button">Tentar novamente</button>
+  </p>
+}
+@if (carregando()) {
+  <p role="status">Carregando serviços...</p>
+} @else if (filtrados().length === 0) {
+  <p class="vazio">Nenhum serviço encontrado.</p>
+} @else {
+  <div class="tabela-container">
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Categoria</th>
+          <th>Preço</th>
+          <th>Duração</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of filtrados(); track s._id) {
+          <tr>
+            <td>{{ s.nome }}</td>
+            <td>{{ s.categoria }}</td>
+            <td>{{ s.preco | currency: 'BRL' }}</td>
+            <td>{{ s.duracaoMinutos }} min</td>
+            <td>
+              <div class="acoes">
+                <a class="botao secundario" [routerLink]="[s._id, 'editar']">Editar</a
+                ><button type="button" class="botao perigo" (click)="excluir(s)">Inativar</button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -39,11 +39,11 @@
       <div class="lista-tutores">
         @for (tutor of tutoresFiltrados; track tutor._id) {
           <app-tutor-card
-  [tutor]="tutor"
-  (selecionar)="selecionarTutor($event)"
-  (editar)="editarTutor($event)"
-   (excluir)="excluirTutor($event)"
-/>
+            [tutor]="tutor"
+            (selecionar)="selecionarTutor($event)"
+            (editar)="editarTutor($event)"
+            (excluir)="excluirTutor($event)"
+          />
         }
       </div>
     }

@@ -11,7 +11,28 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
 
   // Permite que o front-end Angular (porta 4200) chame a API
-  app.enableCors({ origin: 'http://localhost:4200' });
+  app.enableCors({
+    origin: (process.env.CORS_ORIGIN || 'http://localhost:4200')
+      .split(',')
+      .map((x) => x.trim()),
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: false,
+  });
+  // Respostas de API não devem ser armazenadas em caches compartilhados.
+  app.use(
+    (
+      _req: unknown,
+      res: { setHeader: (chave: string, valor: string) => void },
+      next: () => void,
+    ) => {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Frame-Options', 'DENY');
+      res.setHeader('Referrer-Policy', 'no-referrer');
+      res.setHeader('Cache-Control', 'no-store');
+      next();
+    },
+  );
 
   // Validação automática dos DTOs (PDF 04, cap. 12 e 13)
   // whitelist: remove campos que não estão no DTO
@@ -35,15 +56,18 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth()
     .build();
-  SwaggerModule.setup(
-    'api/docs',
-    app,
-    SwaggerModule.createDocument(app, config),
-  );
+  if (process.env.NODE_ENV !== 'production') {
+    SwaggerModule.setup(
+      'api/docs',
+      app,
+      SwaggerModule.createDocument(app, config),
+    );
+  }
 
   const porta = process.env.PORT ?? 3000;
   await app.listen(porta);
   console.log(`API rodando em http://localhost:${porta}/api/v1`);
-  console.log(`Swagger em http://localhost:${porta}/api/docs`);
+  if (process.env.NODE_ENV !== 'production')
+    console.log(`Swagger em http://localhost:${porta}/api/docs`);
 }
 void bootstrap();

@@ -52,10 +52,10 @@ export class TutoresLista implements OnInit {
   }
 
   get tutoresFiltrados(): Tutor[] {
-    const termo = this.termoBusca.trim().toLowerCase();
+    const termo = this.termoBusca.trim().toLocaleLowerCase();
 
     return this.tutores.filter((tutor) =>
-      tutor.nome.toLowerCase().includes(termo),
+      tutor.nome.toLocaleLowerCase().includes(termo),
     );
   }
 
