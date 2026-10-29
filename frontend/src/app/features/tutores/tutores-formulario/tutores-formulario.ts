@@ -108,10 +108,17 @@ export class TutoresFormulario implements OnInit {
       : this.tutoresService.criar(dados);
 
     operacao.subscribe({
-      next: () => {
-        this.salvando.set(false);
-        this.router.navigate(['/tutores']);
-      },
+     next: () => {
+  const mensagemSucesso = this.idTutor
+    ? 'Tutor atualizado com sucesso.'
+    : 'Tutor cadastrado com sucesso.';
+
+  this.salvando.set(false);
+
+  this.router.navigate(['/tutores'], {
+    state: { mensagemSucesso },
+  });
+},
       error: (falha: unknown) => {
         this.salvando.set(false);
 

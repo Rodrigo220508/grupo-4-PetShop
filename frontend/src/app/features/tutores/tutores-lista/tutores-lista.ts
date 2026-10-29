@@ -40,14 +40,17 @@ export class TutoresLista implements OnInit {
 
     this.tutoresService.listar().subscribe({
       next: (dados) => {
-        this.tutores = dados;
-        this.carregando.set(false);
-        this.sucesso.set('Lista de tutores carregada com sucesso.');
-      },
-      error: () => {
-        this.erro.set('Não foi possível carregar os tutores.');
-        this.carregando.set(false);
-      },
+  this.tutores = dados;
+  this.carregando.set(false);
+
+  const mensagem = window.history.state?.mensagemSucesso;
+
+  this.sucesso.set(
+    typeof mensagem === 'string'
+      ? mensagem
+      : 'Lista de tutores carregada com sucesso.',
+  );
+},
     });
   }
 
