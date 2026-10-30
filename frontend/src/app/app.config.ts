@@ -7,7 +7,7 @@ import {
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
-
+import { TutoresApiService } from './features/tutores/services/tutores-api.service';
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
 
@@ -36,10 +36,12 @@ export const appConfig: ApplicationConfig = {
         ? ProdutosMockService
         : ProdutosApiService,
     },
-    {
-      provide: TutoresService,
-      useExisting: TutoresMockService,
-    },
+   {
+  provide: TutoresService,
+  useClass: environment.usarMock
+    ? TutoresMockService
+    : TutoresApiService,
+},
     {
       provide: PetsService,
       useClass: PetsMockService,
