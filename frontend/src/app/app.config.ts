@@ -1,12 +1,7 @@
-
 import { provideHttpClient } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
-import {
-  ApplicationConfig,
-  LOCALE_ID,
-  provideBrowserGlobalErrorListeners,
-} from '@angular/core';
+import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 
 import { environment } from '../environments/environment';
@@ -21,6 +16,7 @@ import { TutoresService } from './features/tutores/services/tutores.service';
 
 import { PetsMockService } from './features/pets/services/pets-mock.service';
 import { PetsService } from './features/pets/services/pets.service';
+import { PetsApiService } from './features/pets/services/pets-api.service';
 
 import { AtendimentosService } from './features/atendimentos/services/atendimentos.service';
 import { AtendimentosMockService } from './features/atendimentos/services/atendimentos-mock.service';
@@ -40,9 +36,7 @@ export const appConfig: ApplicationConfig = {
 
     {
       provide: ProdutosService,
-      useClass: environment.usarMock
-        ? ProdutosMockService
-        : ProdutosApiService,
+      useClass: environment.usarMock ? ProdutosMockService : ProdutosApiService,
     },
 
     {
@@ -52,7 +46,7 @@ export const appConfig: ApplicationConfig = {
 
     {
       provide: PetsService,
-      useClass: PetsMockService,
+      useClass: environment.usarMock ? PetsMockService : PetsApiService,
     },
 
     // Módulos de demonstração ainda sem API NestJS correspondente.
