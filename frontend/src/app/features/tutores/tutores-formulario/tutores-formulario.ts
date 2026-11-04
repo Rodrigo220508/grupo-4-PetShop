@@ -30,7 +30,7 @@ export class TutoresFormulario implements OnInit {
       nonNullable: true,
       validators: [
         Validators.required,
-        Validators.pattern(/^\(\d{2}\) \d{4,5}-\d{4}$/),
+       Validators.pattern(/^\(\d{2}\) \d{4,5}-\d{4}$/),
       ],
     }),
     email: new FormControl('', {
