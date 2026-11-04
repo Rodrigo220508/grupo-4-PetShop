@@ -21,6 +21,7 @@
     "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true,
     "rootDir": "./src",
+    "types": ["node", "jest"],
   },
   "exclude": [
     "node_modules",
