@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProdutosModule } from './produtos/produtos.module';
 import { AtendimentosModule } from './atendimentos/atendimentos.module';
+import { PetsModule } from './pets/pets.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AtendimentosModule } from './atendimentos/atendimentos.module';
     // seguindo este modelo e o registra aqui.
     ProdutosModule,
     AtendimentosModule,
+    PetsModule,
   ],
 })
 export class AppModule {}
