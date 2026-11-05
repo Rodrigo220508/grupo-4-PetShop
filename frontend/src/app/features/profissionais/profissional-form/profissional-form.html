@@ -1,0 +1,62 @@
+<h1>{{ id() ? 'Editar profissional' : 'Novo profissional' }}</h1>
+@if (erro()) {
+  <p role="alert" class="alerta erro">{{ erro() }}</p>
+}
+@if (carregando()) {
+  <p role="status">Carregando profissional...</p>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="salvar()" class="cartao formulario" novalidate>
+    <div class="campo">
+      <label for="nome-prof">Nome *</label
+      ><input id="nome-prof" formControlName="nome" maxlength="80" />
+      @if (invalido('nome')) {
+        <small class="msg-erro">Informe entre 3 e 80 caracteres.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="funcao-prof">Função *</label
+      ><select id="funcao-prof" formControlName="funcao">
+        <option value="">Selecione</option>
+        @for (f of funcoes; track f) {
+          <option [value]="f">{{ f }}</option>
+        }
+      </select>
+      @if (invalido('funcao')) {
+        <small class="msg-erro">Selecione a função.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="telefone-prof">Telefone *</label
+      ><input
+        id="telefone-prof"
+        type="tel"
+        placeholder="(51) 99999-9999"
+        formControlName="telefone"
+      />
+      @if (invalido('telefone')) {
+        <small class="msg-erro">Use (51) 99999-9999.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="email-prof">E-mail *</label
+      ><input id="email-prof" type="email" formControlName="email" />
+      @if (invalido('email')) {
+        <small class="msg-erro">Informe um e-mail válido.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="crmv-prof"
+        >CRMV {{ form.controls.funcao.value === 'veterinario' ? '*' : '' }}</label
+      ><input id="crmv-prof" formControlName="crmv" maxlength="20" />
+      @if (invalido('crmv')) {
+        <small class="msg-erro">Máximo de 20 caracteres.</small>
+      }
+    </div>
+    <div class="acoes-form">
+      <a routerLink="/profissionais" class="botao secundario">Cancelar</a
+      ><button class="botao" type="submit" [disabled]="form.invalid || salvando()">
+        {{ salvando() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </form>
+}

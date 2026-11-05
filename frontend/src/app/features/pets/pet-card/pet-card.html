@@ -32,17 +32,5 @@
     {{ pet().ativo ? 'Ativo' : 'Inativo' }}
   </span>
 
-  <div class="pet-acoes">
-    <button type="button" (click)="editar.emit(pet())">
-      Editar
-    </button>
-
-    <button
-      type="button"
-      class="botao-excluir"
-      (click)="excluir.emit(pet()._id)"
-    >
-      Excluir
-    </button>
-  </div>
+ 
 </article>

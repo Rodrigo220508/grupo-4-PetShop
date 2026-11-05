@@ -1,0 +1,82 @@
+<div class="cabecalho-pagina">
+  <div>
+    <h1>Atendimentos</h1>
+    <p>Agenda de banho, tosa e consultas.</p>
+  </div>
+  <a class="botao" routerLink="novo">+ Agendar atendimento</a>
+</div>
+<div class="barra-filtros">
+  <label for="filtro-status">Status</label>
+  <select id="filtro-status" [value]="status()" (change)="filtrar($any($event.target).value)">
+    <option value="">Todos</option>
+    @for (item of estados; track item) {
+      <option [value]="item">{{ item.replace('_', ' ') }}</option>
+    }
+  </select>
+</div>
+@if (sucesso()) {
+  <p class="alerta sucesso" role="status">{{ sucesso() }}</p>
+}
+@if (erro()) {
+  <p class="alerta erro" role="alert">
+    {{ erro() }}
+    <button type="button" class="botao secundario" (click)="carregar()">Tentar novamente</button>
+  </p>
+}
+@if (carregando()) {
+  <p role="status" class="carregando">Carregando atendimentos...</p>
+} @else if (itens().length === 0) {
+  <p class="vazio">Nenhum atendimento encontrado.</p>
+} @else {
+  <div class="tabela-container">
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Pet</th>
+          <th>Serviço</th>
+          <th>Profissional</th>
+          <th>Data/hora</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (a of itens(); track a._id) {
+          <tr>
+            <td>{{ nome(a.pet, 'pet') }}</td>
+            <td>{{ nome(a.servico, 'servico') }}</td>
+            <td>{{ nome(a.profissional, 'profissional') }}</td>
+            <td>{{ a.dataHora | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span class="etiqueta">{{ a.status.replace('_', ' ') }}</span>
+            </td>
+            <td>
+              <div class="acoes">
+                @if (a.status === 'agendado') {
+                  <a class="botao secundario" [routerLink]="[a._id, 'editar']">Editar</a>
+                }
+                @for (destino of transicoes[a.status]; track destino) {
+                  <button
+                    type="button"
+                    class="botao"
+                    [class.perigo]="destino === 'cancelado'"
+                    [disabled]="operando()"
+                    (click)="avancar(a, destino)"
+                  >
+                    {{
+                      destino === 'em_atendimento'
+                        ? 'Iniciar'
+                        : destino === 'concluido'
+                          ? 'Concluir'
+                          : 'Cancelar'
+                    }}
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

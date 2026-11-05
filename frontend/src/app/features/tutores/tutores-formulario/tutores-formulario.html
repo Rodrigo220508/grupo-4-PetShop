@@ -1,3 +1,4 @@
+
 <section class="pagina">
   <header class="cabecalho">
     <div>
@@ -126,10 +127,10 @@
           Cancelar
         </a>
 
-       <button
-  type="submit"
-  [disabled]="formulario.invalid || salvando()"
->
+        <button
+          type="submit"
+          [disabled]="formulario.invalid || salvando()"
+        >
           {{
             salvando()
               ? 'Salvando...'

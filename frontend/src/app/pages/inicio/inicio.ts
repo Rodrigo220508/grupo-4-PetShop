@@ -1,14 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { AuthMockService } from '../../core/auth/auth-mock.service';
 import { RouterLink } from '@angular/router';
+import { RelatoriosPainel } from '../../features/relatorios/relatorios-painel/relatorios-painel';
 
 @Component({
   selector: 'app-inicio',
-  imports: [RouterLink],
-  template: `
-    <h1>Bem-vindo</h1>
-    <p>Este é o projeto base do Projeto Integrador. Use o módulo
-      <a routerLink="/produtos">Produtos</a> como modelo para construir o módulo do seu domínio.</p>
-    <!-- TODO (aula 11): o aluno do módulo de Relatórios coloca aqui os indicadores do sistema -->
-  `,
+  imports: [RouterLink, RelatoriosPainel],
+  templateUrl: './inicio.html',
+  styleUrl: './inicio.css',
 })
-export class Inicio {}
+export class Inicio {
+  protected readonly auth = inject(AuthMockService);
+}

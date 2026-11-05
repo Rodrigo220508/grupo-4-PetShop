@@ -5,62 +5,61 @@
       <h1>Pets cadastrados</h1>
       <p>Gerencie os animais cadastrados no PetShop.</p>
     </div>
-
-    <button type="button" class="botao-novo" (click)="novoPet()">
-      + Cadastrar pet
-    </button>
+    <a class="botao botao-novo" routerLink="novo">+ Cadastrar pet</a>
   </header>
 
-  <!-- MENSAGENS DE CARREGAMENTO, ERRO E SUCESSO -->
   @if (carregando()) {
     <p role="status">Carregando pets...</p>
   }
 
   @if (erro()) {
-    <p role="alert">{{ erro() }}</p>
+    <p class="alerta erro" role="alert">
+      {{ erro() }}
+      <button type="button" (click)="carregarPets()">Tentar novamente</button>
+    </p>
   }
 
   @if (sucesso()) {
-    <p role="status">{{ sucesso() }}</p>
-  }
-
-  @if (formularioAberto()) {
-    <app-pet-form
-      [petInicial]="petEmEdicao()"
-      (salvo)="finalizarFormulario()"
-      (cancelar)="finalizarFormulario()"
-    />
+    <p class="alerta sucesso" role="status">{{ sucesso() }}</p>
   }
 
   <div class="filtro">
-    <label for="filtro-especie">Filtrar por espÃ©cie:</label>
-
+    <label for="filtro-especie">Filtrar por espécie</label>
     <select
       id="filtro-especie"
       [value]="especieSelecionada()"
       (change)="selecionarEspecie($any($event.target).value)"
     >
-      <option value="todas">Todas as espÃ©cies</option>
-      @for (especie of especies; track especie) {
-        <option [value]="especie">{{ especie }}</option>
+      <option value="todas">Todas as espécies</option>
+      @for (e of especies; track e) {
+        <option [value]="e">{{ e }}</option>
       }
     </select>
   </div>
 
-  <div class="pets-lista">
-    @for (pet of petsFiltrados(); track pet._id) {
-      <div class="pet-item">
-        <app-pet-card
-          [pet]="pet"
-          (editar)="editarPet($event)"
-          (excluir)="excluirPet($event)"
-        />
-      </div>
-    } @empty {
-      <p class="sem-pets">
-        Nenhum pet encontrado para essa espÃ©cie.
-      </p>
-    }
-  </div>
+  @if (!carregando()) {
+    <div class="pets-lista">
+      @for (pet of petsFiltrados(); track pet._id) {
+        <div class="pet-item">
+          <app-pet-card [pet]="pet" />
 
+          <div class="pet-acoes">
+            <a class="botao secundario" [routerLink]="[pet._id, 'editar']">
+              Editar
+            </a>
+
+            <button
+              type="button"
+              class="botao perigo"
+              (click)="excluirPet(pet._id)"
+            >
+              Excluir
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <p class="vazio">Nenhum pet encontrado.</p>
+      }
+    </div>
+  }
 </section>

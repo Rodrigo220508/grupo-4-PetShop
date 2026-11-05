@@ -1,0 +1,63 @@
+<h1>{{ id() ? 'Editar serviço' : 'Novo serviço' }}</h1>
+@if (erro()) {
+  <p role="alert" class="alerta erro">{{ erro() }}</p>
+}
+@if (carregando()) {
+  <p role="status">Carregando serviço...</p>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="salvar()" class="cartao formulario" novalidate>
+    <div class="campo">
+      <label for="nome-s">Nome *</label
+      ><input
+        id="nome-s"
+        formControlName="nome"
+        maxlength="60"
+        [class.invalido]="invalido('nome')"
+      />
+      @if (invalido('nome')) {
+        <small class="msg-erro">Nome entre 3 e 60 caracteres.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="cat-s">Categoria *</label
+      ><select id="cat-s" formControlName="categoria">
+        <option value="">Selecione</option>
+        @for (c of categorias; track c) {
+          <option [value]="c">{{ c }}</option>
+        }
+      </select>
+      @if (invalido('categoria')) {
+        <small class="msg-erro">Selecione a categoria.</small>
+      }
+    </div>
+    <div class="linha">
+      <div class="campo">
+        <label for="preco-s">Preço (R$) *</label
+        ><input id="preco-s" type="number" min="0" step="0.01" formControlName="preco" />
+        @if (invalido('preco')) {
+          <small class="msg-erro">Preço inválido.</small>
+        }
+      </div>
+      <div class="campo">
+        <label for="dur-s">Duração (min) *</label
+        ><input
+          id="dur-s"
+          type="number"
+          min="10"
+          max="480"
+          step="1"
+          formControlName="duracaoMinutos"
+        />
+        @if (invalido('duracaoMinutos')) {
+          <small class="msg-erro">De 10 a 480 minutos inteiros.</small>
+        }
+      </div>
+    </div>
+    <div class="acoes-form">
+      <a routerLink="/servicos" class="botao secundario">Cancelar</a
+      ><button type="submit" class="botao" [disabled]="form.invalid || salvando()">
+        {{ salvando() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </form>
+}

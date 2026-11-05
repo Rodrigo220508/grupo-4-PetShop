@@ -1,0 +1,77 @@
+<div class="cabecalho-pagina">
+  <h1>{{ id() ? 'Editar atendimento' : 'Agendar atendimento' }}</h1>
+</div>
+@if (erro()) {
+  <p class="alerta erro" role="alert">{{ erro() }}</p>
+}
+@if (carregando()) {
+  <p role="status">Carregando formulário...</p>
+} @else {
+  <form class="cartao formulario" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+    <div class="campo">
+      <label for="pet">Pet *</label
+      ><select id="pet" formControlName="pet" [class.invalido]="invalido('pet')">
+        <option value="">Selecione um pet</option>
+        @for (p of pets(); track p._id) {
+          <option [value]="p._id">{{ p.nome }}</option>
+        }
+      </select>
+      @if (invalido('pet')) {
+        <small class="msg-erro">Selecione um pet.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="servico">Serviço *</label
+      ><select id="servico" formControlName="servico" [class.invalido]="invalido('servico')">
+        <option value="">Selecione um serviço</option>
+        @for (s of servicos(); track s._id) {
+          <option [value]="s._id">{{ s.nome }}</option>
+        }
+      </select>
+      @if (invalido('servico')) {
+        <small class="msg-erro">Selecione um serviço.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="profissional">Profissional *</label
+      ><select
+        id="profissional"
+        formControlName="profissional"
+        [class.invalido]="invalido('profissional')"
+      >
+        <option value="">Selecione um profissional</option>
+        @for (p of profissionais(); track p._id) {
+          <option [value]="p._id">{{ p.nome }}</option>
+        }
+      </select>
+      @if (invalido('profissional')) {
+        <small class="msg-erro">Selecione um profissional.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="dataHora">Data e hora *</label
+      ><input
+        type="datetime-local"
+        id="dataHora"
+        formControlName="dataHora"
+        [class.invalido]="invalido('dataHora')"
+      />
+      @if (invalido('dataHora')) {
+        <small class="msg-erro">Informe a data e a hora.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="observacoes">Observações</label
+      ><textarea id="observacoes" formControlName="observacoes" maxlength="300" rows="3"></textarea>
+      @if (invalido('observacoes')) {
+        <small class="msg-erro">Máximo de 300 caracteres.</small>
+      }
+    </div>
+    <div class="acoes-form">
+      <a routerLink="/atendimentos" class="botao secundario">Cancelar</a
+      ><button type="submit" class="botao" [disabled]="form.invalid || salvando()">
+        {{ salvando() ? 'Salvando...' : 'Salvar atendimento' }}
+      </button>
+    </div>
+  </form>
+}

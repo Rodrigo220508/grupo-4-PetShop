@@ -1,0 +1,69 @@
+<div class="cabecalho-pagina">
+  <h1>Relatórios</h1>
+  <button class="botao secundario" type="button" (click)="carregar()">Atualizar painel</button>
+</div>
+<p>Indicadores demonstrativos calculados dos dados em memória (modo mock).</p>
+@if (erro()) {
+  <p class="alerta erro" role="alert">{{ erro() }}</p>
+}
+@if (carregando()) {
+  <p role="status">Carregando relatórios...</p>
+} @else {
+  <div class="indicadores">
+    <article class="cartao">
+      <h2>Tutores</h2>
+      <strong>{{ resumo().tutores }}</strong>
+    </article>
+    <article class="cartao">
+      <h2>Pets</h2>
+      <strong>{{ resumo().pets }}</strong>
+    </article>
+    <article class="cartao">
+      <h2>Agendados</h2>
+      <strong>{{ resumo().atendimentosAgendados }}</strong>
+    </article>
+  </div>
+  <h2>Atendimentos por status</h2>
+  <div class="tabela-container">
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Quantidade</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of porStatus(); track s.status) {
+          <tr>
+            <td>{{ s.status.replace('_', ' ') }}</td>
+            <td>{{ s.quantidade }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <h2>Faturamento por serviço (concluídos)</h2>
+  <div class="tabela-container">
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Serviço</th>
+          <th>Atendimentos</th>
+          <th>Faturamento estimado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of porServico(); track s.servico) {
+          <tr>
+            <td>{{ s.servico }}</td>
+            <td>{{ s.quantidade }}</td>
+            <td>{{ s.faturamento | currency: 'BRL' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  @if (resumo().tutores === 0 && resumo().pets === 0 && resumo().atendimentosAgendados === 0) {
+    <p class="vazio">Sem dados disponíveis para o período.</p>
+  }
+}

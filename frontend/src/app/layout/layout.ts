@@ -1,14 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthMockService } from '../core/auth/auth-mock.service';
+import { DialogoConfirmacao } from '../core/ui/dialogo-confirmacao/dialogo-confirmacao';
 
-/** Componente de layout: cabeçalho, menu lateral e área de conteúdo (PDF 02, cap. 4). */
 @Component({
   selector: 'app-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  standalone: true,
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, DialogoConfirmacao],
   templateUrl: './layout.html',
   styleUrl: './layout.css',
 })
 export class Layout {
-  // TODO (aula 01/02): troque pelo nome do sistema do seu grupo
-  protected readonly nomeSistema = 'Projeto Integrador';
+  protected readonly auth = inject(AuthMockService);
+  protected readonly nomeSistema = 'PetShop';
 }

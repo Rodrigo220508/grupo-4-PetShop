@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { ProdutoCard } from '../produto-card/produto-card';
 import { CATEGORIAS, Categoria, Produto } from '../produto.model';
 import { ProdutosService } from '../services/produtos.service';
+import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
 
 /** Tela de listagem (componente de página — PDF 02, cap. 4). */
 @Component({
@@ -13,6 +14,7 @@ import { ProdutosService } from '../services/produtos.service';
 })
 export class ProdutosLista implements OnInit {
   private readonly produtosService = inject(ProdutosService);
+  private readonly confirmacao = inject(ConfirmacaoService);
 
   protected readonly categorias = CATEGORIAS;
   // Estado da tela com signals (PDF 02, cap. 11)
@@ -48,10 +50,14 @@ export class ProdutosLista implements OnInit {
     });
   }
 
-  protected excluir(produto: Produto): void {
-    if (!confirm(`Excluir o produto "${produto.nome}"?`)) {
-      return;
-    }
+  protected async excluir(produto: Produto): Promise<void> {
+    const aceitou = await this.confirmacao.confirmar({
+      titulo: 'Excluir produto?',
+      descricao: `Tem certeza que deseja excluir o produto "${produto.nome}"? Esta ação não pode ser desfeita.`,
+      textoConfirmar: 'Sim, excluir',
+      tipo: 'perigo',
+    });
+    if (!aceitou) return;
     this.erro.set(null);
     this.sucesso.set(null);
     this.produtosService.remover(produto._id).subscribe({
