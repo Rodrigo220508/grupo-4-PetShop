@@ -3,7 +3,7 @@ import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
 import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
-
+import { TutoresApiService } from './features/tutores/services/tutores-api.service';
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
 
@@ -38,12 +38,14 @@ export const appConfig: ApplicationConfig = {
       provide: ProdutosService,
       useClass: environment.usarMock ? ProdutosMockService : ProdutosApiService,
     },
-
     {
       provide: TutoresService,
-      useClass: TutoresMockService,
+      useClass: environment.usarMock
+        ? TutoresMockService
+        : TutoresApiService,
     },
-
+    
+  
     {
       provide: PetsService,
       useClass: environment.usarMock ? PetsMockService : PetsApiService,

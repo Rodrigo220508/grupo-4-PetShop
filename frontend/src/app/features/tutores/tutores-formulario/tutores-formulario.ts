@@ -30,7 +30,7 @@ export class TutoresFormulario implements OnInit {
       nonNullable: true,
       validators: [
         Validators.required,
-        Validators.pattern(/^\(\d{2}\) \d{4,5}-\d{4}$/),
+       Validators.pattern(/^\(\d{2}\) \d{4,5}-\d{4}$/),
       ],
     }),
     email: new FormControl('', {
@@ -108,10 +108,17 @@ export class TutoresFormulario implements OnInit {
       : this.tutoresService.criar(dados);
 
     operacao.subscribe({
-      next: () => {
-        this.salvando.set(false);
-        this.router.navigate(['/tutores']);
-      },
+     next: () => {
+  const mensagemSucesso = this.idTutor
+    ? 'Tutor atualizado com sucesso.'
+    : 'Tutor cadastrado com sucesso.';
+
+  this.salvando.set(false);
+
+  this.router.navigate(['/tutores'], {
+    state: { mensagemSucesso },
+  });
+},
       error: (falha: unknown) => {
         this.salvando.set(false);
 
