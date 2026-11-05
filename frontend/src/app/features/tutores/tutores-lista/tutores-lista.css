@@ -1,79 +1,174 @@
 
 .pagina {
-  max-width: 1100px;
+  max-width: 1150px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 36px 28px;
+  min-height: 100vh;
+  background: #f3faf7;
+  border-radius: 20px;
+  color: #214b43;
+  box-sizing: border-box;
 }
 
 .cabecalho {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 20px;
+  margin-bottom: 32px;
+  padding: 28px;
+  background: linear-gradient(120deg, #d8f3e8, #effaf5);
+  border: 1px solid #c8e9dc;
+  border-radius: 22px;
 }
 
 .cabecalho h1 {
   margin: 0 0 8px;
+  color: #174b40;
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.cabecalho h1::before {
+  content: "🐾 ";
 }
 
 .cabecalho p {
   margin: 0;
-  color: #666;
+  color: #55796e;
+  font-size: 15px;
 }
 
 .botao {
   display: inline-block;
-  padding: 10px 16px;
-  background: #2563eb;
+  padding: 13px 20px;
+  background: #237b65;
   color: white;
   text-decoration: none;
-  border-radius: 6px;
+  font-weight: 700;
+  border-radius: 12px;
+  box-shadow: 0 5px 12px #237b6530;
+  transition: 0.2s ease;
+}
+
+.botao:hover {
+  background: #185c4b;
+  transform: translateY(-2px);
+}
+
+.filtro {
+  margin-bottom: 28px;
+  padding: 22px;
+  background: white;
+  border: 1px solid #e0eee8;
+  border-radius: 18px;
+  box-shadow: 0 5px 18px #214b4309;
 }
 
 .pagina label {
   display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
+  margin-bottom: 10px;
+  color: #285b4e;
+  font-weight: 700;
 }
 
 .pagina input {
   width: 100%;
-  max-width: 420px;
+  max-width: 500px;
   box-sizing: border-box;
-  padding: 11px;
-  margin-bottom: 24px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  padding: 14px 16px;
+  background: #f8fcfa;
+  border: 1px solid #cfe3da;
+  border-radius: 12px;
+  outline: none;
+  font-size: 15px;
+  transition: 0.2s;
 }
 
-.tabela-container {
-  overflow-x: auto;
+.pagina input:focus {
+  border-color: #48a88a;
+  box-shadow: 0 0 0 3px #48a88a20;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
+.lista-tutores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
 }
 
-th,
-td {
+.vazio {
+  padding: 30px;
+  text-align: center;
+  color: #66877c;
+  background: white;
+  border: 1px dashed #b8d9ca;
+  border-radius: 16px;
+}
+
+.detalhes {
+  margin-top: 28px;
+  padding: 26px;
+  background: white;
+  border: 1px solid #d8ebe2;
+  border-left: 5px solid #48a88a;
+  border-radius: 16px;
+  box-shadow: 0 5px 18px #214b4309;
+}
+
+.detalhes h2 {
+  margin-top: 0;
+  color: #185c4b;
+}
+
+.detalhes p {
+  color: #526d63;
+  line-height: 1.6;
+}
+
+.detalhes button,
+.pagina button {
+  padding: 11px 17px;
+  border: none;
+  border-radius: 10px;
+  background: #237b65;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.detalhes button:hover,
+.pagina button:hover {
+  background: #185c4b;
+}
+
+[role="alert"] {
   padding: 14px;
-  border-bottom: 1px solid #ddd;
+  color: #a33232;
+  background: #fff0f0;
+  border-radius: 10px;
 }
 
-th {
-  background: #f3f4f6;
+[role="status"] {
+  color: #237b65;
+  font-weight: 600;
 }
 
 @media (max-width: 600px) {
+  .pagina {
+    padding: 18px 14px;
+  }
+
   .cabecalho {
     align-items: flex-start;
     flex-direction: column;
+    padding: 22px;
   }
 
-  .pagina {
-    padding: 16px;
+  .cabecalho h1 {
+    font-size: 27px;
+  }
+
+  .lista-tutores {
+    grid-template-columns: 1fr;
   }
 }

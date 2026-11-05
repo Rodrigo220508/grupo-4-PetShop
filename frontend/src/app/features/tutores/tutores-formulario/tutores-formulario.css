@@ -1,0 +1,155 @@
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #f3faf7;
+  padding: 30px 16px;
+  box-sizing: border-box;
+}
+
+.pagina {
+  max-width: 750px;
+  margin: 0 auto;
+  padding: 30px;
+  background: #ffffff;
+  border: 1px solid #dceee5;
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(33, 75, 67, 0.07);
+  color: #214b43;
+}
+
+h1 {
+  margin: 0 0 8px;
+  color: #185c4b;
+  font-size: 28px;
+}
+
+p {
+  color: #668078;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  color: #285b4e;
+  font-weight: 700;
+}
+
+input {
+  width: 100%;
+  padding: 13px 15px;
+  box-sizing: border-box;
+  border: 1px solid #cfe3da;
+  border-radius: 10px;
+  background: #f8fcfa;
+  color: #214b43;
+  font: inherit;
+  outline: none;
+  transition: 0.2s;
+}
+
+input:focus {
+  border-color: #48a88a;
+  box-shadow: 0 0 0 3px rgba(72, 168, 138, 0.15);
+}
+
+input::placeholder {
+  color: #9aafa6;
+}
+
+small {
+  display: block;
+  margin-top: 6px;
+  color: #bd4141;
+}
+
+.acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+button,
+.botao {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+button[type="submit"] {
+  background: #237b65;
+  color: white;
+}
+
+button[type="submit"]:hover {
+  background: #185c4b;
+}
+
+button[type="button"],
+.botao {
+  background: #e8f4ee;
+  color: #285b4e;
+}
+
+button[type="button"]:hover,
+.botao:hover {
+  background: #d6ebe0;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+[role="alert"] {
+  padding: 12px;
+  border-radius: 10px;
+  background: #fff0f0;
+  color: #a33232;
+}
+
+[role="status"] {
+  color: #237b65;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .pagina {
+    padding: 22px 18px;
+  }
+
+  .acoes {
+    flex-direction: column-reverse;
+  }
+
+  .acoes button,
+  .acoes .botao {
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+  }
+  .acoes a.botao-secundario {
+  display: inline-block !important;
+  padding: 12px 24px !important;
+  background-color: #e8f4ee !important;
+  color: #185c4b !important;
+  border: 2px solid #cfe3da !important;
+  border-radius: 10px !important;
+  text-decoration: none !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
+}

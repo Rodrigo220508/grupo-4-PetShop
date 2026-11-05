@@ -1,66 +1,116 @@
-
 .pet-form {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.75rem;
   width: 100%;
   max-width: 520px;
-  padding: 1.5rem;
-  border: 1px solid #d9e0e8;
-  border-radius: 12px;
+  box-sizing: border-box;
+  padding: 1.75rem;
+  border: 1px solid #dceee5;
+  border-radius: 14px;
   background: #ffffff;
+  box-shadow: 0 3px 12px #174b4009;
 }
 
 .pet-form h2 {
-  margin: 0 0 0.5rem;
-  color: #172554;
+  margin: 0 0 0.75rem;
+  color: #174b40;
+  font-size: 1.4rem;
 }
 
 .pet-form label {
-  color: #334155;
+  color: #31594c;
   font-weight: 600;
+  font-size: 0.95rem;
 }
 
 .pet-form input:not([type='checkbox']),
 .pet-form select {
   box-sizing: border-box;
   width: 100%;
-  padding: 0.7rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 7px;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid #c8e1d5;
+  border-radius: 8px;
+  background: #fbfefc;
+  color: #174b40;
   font: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.pet-form input:focus,
+.pet-form select:focus {
+  outline: none;
+  border-color: #237b65;
+  box-shadow: 0 0 0 3px #237b651c;
 }
 
 .pet-form .ativo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   margin: 0.5rem 0;
+  color: #31594c;
+}
+
+.pet-form input[type='checkbox'] {
+  width: 17px;
+  height: 17px;
+  accent-color: #237b65;
 }
 
 .erro {
-  color: #b91c1c;
+  color: #b42318;
+  font-size: 0.85rem;
 }
 
 .acoes {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 .acoes button {
-  padding: 0.7rem 1rem;
+  padding: 0.8rem 1.2rem;
   border: 0;
-  border-radius: 7px;
-  background: #1d4ed8;
+  border-radius: 8px;
+  background: #237b65;
   color: white;
   font: inherit;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.acoes button:hover {
+  background: #174b40;
+  transform: translateY(-1px);
+}
+
+.acoes button:focus-visible {
+  outline: 3px solid #83cbb0;
+  outline-offset: 3px;
 }
 
 .acoes .botao-cancelar {
-  background: #e2e8f0;
-  color: #334155;
+  background: #e7f2ec;
+  color: #31594c;
+}
+
+.acoes .botao-cancelar:hover {
+  background: #d5e9de;
+}
+
+@media (max-width: 550px) {
+  .pet-form {
+    padding: 1.2rem;
+  }
+
+  .acoes {
+    flex-direction: column;
+  }
+
+  .acoes button {
+    width: 100%;
+  }
 }

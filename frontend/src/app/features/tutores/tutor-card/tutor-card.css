@@ -1,54 +1,100 @@
+
 .cartao {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 16px;
-  border: 1px solid var(--cor-borda);
-  border-radius: 8px;
-  background: #fff;
+  gap: 20px;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #dceee5;
+  border-radius: 18px;
+  box-shadow: 0 5px 18px rgba(33, 75, 67, 0.07);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cartao:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(33, 75, 67, 0.12);
+  border-color: #a9d8c4;
+}
+
+.dados {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .dados h2 {
-  margin: 0 0 8px;
-  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 14px;
+  color: #185c4b;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.dados h2::before {
+  content: "🐾";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  background: #e0f5eb;
+  border-radius: 12px;
+  font-size: 18px;
 }
 
 .dados p {
-  margin: 4px 0;
+  margin: 8px 0;
+  color: #60796f;
+  font-size: 0.94rem;
+  line-height: 1.5;
 }
 
-button {
-  padding: 9px 14px;
+.acoes {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.acoes button {
+  padding: 10px 15px;
   border: none;
-  border-radius: 6px;
-  background: var(--cor-primaria);
+  border-radius: 10px;
+  background: #237b65;
   color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
   cursor: pointer;
+  transition: 0.2s ease;
 }
 
-button:hover {
-  opacity: 0.9;
+.acoes button:hover {
+  filter: brightness(0.9);
+  transform: translateY(-2px);
+}
+
+.acoes button:focus-visible {
+  outline: 3px solid #83cdb0;
+  outline-offset: 3px;
 }
 
 @media (max-width: 600px) {
   .cartao {
     align-items: stretch;
     flex-direction: column;
+    padding: 20px;
   }
- .acoes {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
 
-.acoes button + button {
-  margin-left: 8px;
-}
-.acoes {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
+  .acoes {
+    width: 100%;
+  }
+
+  .acoes button {
+    flex: 1;
+  }
 }
