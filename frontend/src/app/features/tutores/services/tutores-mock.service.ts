@@ -37,9 +37,15 @@ export class TutoresMockService extends TutoresService {
   private proximoId = 4;
   private readonly atraso = 400;
 
-  listar(): Observable<Tutor[]> {
-    return of([...this.tutores]).pipe(delay(this.atraso));
-  }
+  listar(busca?: string): Observable<Tutor[]> {
+  const termo = busca?.trim().toLocaleLowerCase() ?? '';
+
+  const filtrados = this.tutores.filter((tutor) =>
+    tutor.nome.toLocaleLowerCase().includes(termo),
+  );
+
+  return of([...filtrados]).pipe(delay(this.atraso));
+}
 
   buscarPorId(id: string): Observable<Tutor> {
     const tutor = this.tutores.find((t) => t._id === id);

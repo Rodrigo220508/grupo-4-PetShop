@@ -14,11 +14,12 @@
   <div class="filtro">
     <label for="busca">Pesquisar tutor por nome</label>
     <input
-      id="busca"
-      type="search"
-      [(ngModel)]="termoBusca"
-      placeholder="Digite o nome do tutor..."
-    />
+  id="busca"
+  type="search"
+  [(ngModel)]="termoBusca"
+  (ngModelChange)="carregarTutores()"
+  placeholder="Digite o nome do tutor..."
+/>
   </div>
 
   @if (carregando()) {

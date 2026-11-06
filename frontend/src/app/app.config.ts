@@ -1,9 +1,12 @@
 import { provideHttpClient } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
-import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  LOCALE_ID,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
-import { TutoresApiService } from './features/tutores/services/tutores-api.service';
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
 
@@ -11,6 +14,7 @@ import { ProdutosApiService } from './features/produtos/services/produtos-api.se
 import { ProdutosMockService } from './features/produtos/services/produtos-mock.service';
 import { ProdutosService } from './features/produtos/services/produtos.service';
 
+import { TutoresApiService } from './features/tutores/services/tutores-api.service';
 import { TutoresMockService } from './features/tutores/services/tutores-mock.service';
 import { TutoresService } from './features/tutores/services/tutores.service';
 
@@ -19,9 +23,12 @@ import { PetsService } from './features/pets/services/pets.service';
 import { PetsApiService } from './features/pets/services/pets-api.service';
 
 import { AtendimentosService } from './features/atendimentos/services/atendimentos.service';
+import { AtendimentosApiService } from './features/atendimentos/services/atendimentos-api.service';
 import { AtendimentosMockService } from './features/atendimentos/services/atendimentos-mock.service';
+
 import { ServicosService } from './features/servicos/services/servicos.service';
 import { ServicosMockService } from './features/servicos/services/servicos-mock.service';
+
 import { ProfissionaisService } from './features/profissionais/services/profissionais.service';
 import { ProfissionaisMockService } from './features/profissionais/services/profissionais-mock.service';
 
@@ -40,19 +47,18 @@ export const appConfig: ApplicationConfig = {
     },
     {
       provide: TutoresService,
-      useClass: environment.usarMock
-        ? TutoresMockService
-        : TutoresApiService,
+      useClass: environment.usarMock ? TutoresMockService : TutoresApiService,
     },
-    
-  
     {
       provide: PetsService,
       useClass: environment.usarMock ? PetsMockService : PetsApiService,
     },
-
-    // Módulos de demonstração ainda sem API NestJS correspondente.
-    { provide: AtendimentosService, useClass: AtendimentosMockService },
+    {
+      provide: AtendimentosService,
+      useClass: environment.usarMock
+        ? AtendimentosMockService
+        : AtendimentosApiService,
+    },
     { provide: ServicosService, useClass: ServicosMockService },
     { provide: ProfissionaisService, useClass: ProfissionaisMockService },
   ],

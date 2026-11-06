@@ -34,42 +34,38 @@ export class TutoresLista implements OnInit {
   }
 
   carregarTutores(): void {
-  this.carregando.set(true);
-  this.erro.set('');
-  this.sucesso.set('');
+    this.carregando.set(true);
+    this.erro.set('');
+    this.sucesso.set('');
 
-  this.tutoresService.listar().subscribe({
-    next: (dados) => {
-      this.tutores = dados;
-      this.carregando.set(false);
+    this.tutoresService.listar(this.termoBusca).subscribe({
+      next: (dados) => {
+        this.tutores = dados;
+        this.carregando.set(false);
 
-      const mensagem = window.history.state?.mensagemSucesso;
+        const mensagem = window.history.state?.mensagemSucesso;
 
-      this.sucesso.set(
-        typeof mensagem === 'string'
-          ? mensagem
-          : 'Lista de tutores carregada com sucesso.',
-      );
-    },
-    error: (falha: unknown) => {
-      this.carregando.set(false);
+        this.sucesso.set(
+          typeof mensagem === 'string'
+            ? mensagem
+            : 'Lista de tutores carregada com sucesso.',
+        );
+      },
+      error: (falha: unknown) => {
+        this.carregando.set(false);
 
-      const mensagem =
-        falha instanceof Error ? falha.message : '';
+        const mensagem =
+          falha instanceof Error ? falha.message : '';
 
-      this.erro.set(
-        mensagem || 'Não foi possível carregar os tutores. Tente novamente.',
-      );
-    },
-  });
-}
+        this.erro.set(
+          mensagem || 'Não foi possível carregar os tutores. Tente novamente.',
+        );
+      },
+    });
+  }
 
   get tutoresFiltrados(): Tutor[] {
-    const termo = this.termoBusca.trim().toLocaleLowerCase();
-
-    return this.tutores.filter((tutor) =>
-      tutor.nome.toLocaleLowerCase().includes(termo),
-    );
+    return this.tutores;
   }
 
   selecionarTutor(tutor: Tutor): void {

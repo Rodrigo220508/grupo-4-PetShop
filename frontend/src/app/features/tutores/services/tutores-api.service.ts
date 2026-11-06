@@ -9,7 +9,6 @@ import {
   Observable,
   throwError,
 } from 'rxjs';
-
 import { environment } from '../../../../environments/environment';
 import { RespostaApi } from '../../../core/models/resposta-api';
 import { Tutor, TutorEntrada } from '../tutor.model';
@@ -20,9 +19,13 @@ export class TutoresApiService extends TutoresService {
   private readonly http = inject(HttpClient);
   private readonly url = `${environment.apiUrl}/tutores`;
 
-  listar(): Observable<Tutor[]> {
+  listar(busca?: string): Observable<Tutor[]> {
+    const params = busca?.trim()
+      ? { params: { busca: busca.trim() } }
+      : {};
+
     return this.http
-      .get<RespostaApi<Tutor[]>>(this.url)
+      .get<RespostaApi<Tutor[]>>(this.url, params)
       .pipe(
         map((resposta) => resposta.dados),
         catchError(this.tratarErro),
