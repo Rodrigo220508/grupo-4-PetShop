@@ -38,7 +38,7 @@ export class TutoresLista implements OnInit {
     this.erro.set('');
     this.sucesso.set('');
 
-    this.tutoresService.listar().subscribe({
+    this.tutoresService.listar(this.termoBusca).subscribe({
       next: (dados) => {
         this.tutores = dados;
         this.carregando.set(false);
@@ -52,11 +52,7 @@ export class TutoresLista implements OnInit {
   }
 
   get tutoresFiltrados(): Tutor[] {
-    const termo = this.termoBusca.trim().toLocaleLowerCase();
-
-    return this.tutores.filter((tutor) =>
-      tutor.nome.toLocaleLowerCase().includes(termo),
-    );
+    return this.tutores;
   }
 
   selecionarTutor(tutor: Tutor): void {

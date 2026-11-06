@@ -3,13 +3,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProdutosModule } from './produtos/produtos.module';
 import { AtendimentosModule } from './atendimentos/atendimentos.module';
+import { TutoresModule } from './tutores/tutores.module';
 
 @Module({
   imports: [
-    // Lê o arquivo .env (copie o .env.example para .env)
     ConfigModule.forRoot({ isGlobal: true }),
 
-    // Conexão com o MongoDB usando a variável MONGODB_URI
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -20,10 +19,9 @@ import { AtendimentosModule } from './atendimentos/atendimentos.module';
       }),
     }),
 
-    // Módulo de exemplo. Cada aluno cria o módulo do seu domínio
-    // seguindo este modelo e o registra aqui.
     ProdutosModule,
     AtendimentosModule,
+    TutoresModule,
   ],
 })
 export class AppModule {}

@@ -1,0 +1,3417 @@
+﻿
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\atendimentos\atendimento-form\atendimento-form.html ==========
+<div class="cabecalho-pagina">
+  <h1>{{ id() ? 'Editar atendimento' : 'Agendar atendimento' }}</h1>
+</div>
+@if (erro()) {
+  <p class="alerta erro" role="alert">{{ erro() }}</p>
+}
+@if (carregando()) {
+  <p role="status">Carregando formulário...</p>
+} @else {
+  <form class="cartao formulario" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+    <div class="campo">
+      <label for="pet">Pet *</label
+      ><select id="pet" formControlName="pet" [class.invalido]="invalido('pet')">
+        <option value="">Selecione um pet</option>
+        @for (p of pets(); track p._id) {
+          <option [value]="p._id">{{ p.nome }}</option>
+        }
+      </select>
+      @if (invalido('pet')) {
+        <small class="msg-erro">Selecione um pet.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="servico">Serviço *</label
+      ><select id="servico" formControlName="servico" [class.invalido]="invalido('servico')">
+        <option value="">Selecione um serviço</option>
+        @for (s of servicos(); track s._id) {
+          <option [value]="s._id">{{ s.nome }}</option>
+        }
+      </select>
+      @if (invalido('servico')) {
+        <small class="msg-erro">Selecione um serviço.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="profissional">Profissional *</label
+      ><select
+        id="profissional"
+        formControlName="profissional"
+        [class.invalido]="invalido('profissional')"
+      >
+        <option value="">Selecione um profissional</option>
+        @for (p of profissionais(); track p._id) {
+          <option [value]="p._id">{{ p.nome }}</option>
+        }
+      </select>
+      @if (invalido('profissional')) {
+        <small class="msg-erro">Selecione um profissional.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="dataHora">Data e hora *</label
+      ><input
+        type="datetime-local"
+        id="dataHora"
+        formControlName="dataHora"
+        [class.invalido]="invalido('dataHora')"
+      />
+      @if (invalido('dataHora')) {
+        <small class="msg-erro">Informe a data e a hora.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="observacoes">Observações</label
+      ><textarea id="observacoes" formControlName="observacoes" maxlength="300" rows="3"></textarea>
+      @if (invalido('observacoes')) {
+        <small class="msg-erro">Máximo de 300 caracteres.</small>
+      }
+    </div>
+    <div class="acoes-form">
+      <a routerLink="/atendimentos" class="botao secundario">Cancelar</a
+      ><button type="submit" class="botao" [disabled]="form.invalid || salvando()">
+        {{ salvando() ? 'Salvando...' : 'Salvar atendimento' }}
+      </button>
+    </div>
+  </form>
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\atendimentos\atendimento-form\atendimento-form.ts ==========
+import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
+import { idDe } from '../../../core/models/referencia';
+import { PetsService } from '../../pets/services/pets.service';
+import { ServicosService } from '../../servicos/services/servicos.service';
+import { ProfissionaisService } from '../../profissionais/services/profissionais.service';
+import { Pet } from '../../pets/pet.model';
+import { Servico } from '../../servicos/servico.model';
+import { Profissional } from '../../profissionais/profissional.model';
+import { AtendimentosService } from '../services/atendimentos.service';
+function agendamentoFuturo(campo: AbstractControl): ValidationErrors | null {
+  const valor = String(campo.value ?? '');
+  if (!valor) return null;
+  const data = new Date(valor);
+  return Number.isNaN(data.getTime()) || data <= new Date() ? { dataInvalida: true } : null;
+}
+
+@Component({
+  selector: 'app-atendimento-form',
+  imports: [ReactiveFormsModule, RouterLink],
+  templateUrl: './atendimento-form.html',
+})
+export class AtendimentoForm implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly api = inject(AtendimentosService);
+  private readonly petsService = inject(PetsService);
+  private readonly servicosService = inject(ServicosService);
+  private readonly profissionaisService = inject(ProfissionaisService);
+  private readonly router = inject(Router);
+  readonly id = input<string>();
+  protected readonly pets = signal<Pet[]>([]);
+  protected readonly servicos = signal<Servico[]>([]);
+  protected readonly profissionais = signal<Profissional[]>([]);
+  protected readonly carregando = signal(true);
+  protected readonly salvando = signal(false);
+  protected readonly erro = signal('');
+  protected readonly form = this.fb.nonNullable.group({
+    pet: ['', Validators.required],
+    servico: ['', Validators.required],
+    profissional: ['', Validators.required],
+    dataHora: ['', [Validators.required, agendamentoFuturo]],
+    observacoes: ['', Validators.maxLength(300)],
+  });
+  ngOnInit(): void {
+    forkJoin({
+      pets: this.petsService.listar(),
+      servicos: this.servicosService.listar(),
+      profissionais: this.profissionaisService.listar(),
+    }).subscribe({
+      next: ({ pets, servicos, profissionais }) => {
+        this.pets.set(pets);
+        this.servicos.set(servicos);
+        this.profissionais.set(profissionais.filter((x) => x.ativo));
+        const id = this.id();
+        if (!id) {
+          this.carregando.set(false);
+          return;
+        }
+        this.api.buscarPorId(id).subscribe({
+          next: (a) => {
+            this.form.patchValue({
+              pet: idDe(a.pet),
+              servico: idDe(a.servico),
+              profissional: idDe(a.profissional),
+              dataHora: this.paraLocal(a.dataHora),
+              observacoes: a.observacoes ?? '',
+            });
+            this.carregando.set(false);
+          },
+          error: (e: Error) => {
+            this.erro.set(e.message);
+            this.carregando.set(false);
+          },
+        });
+      },
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.carregando.set(false);
+      },
+    });
+  }
+  protected invalido(campo: keyof typeof this.form.controls): boolean {
+    const c = this.form.controls[campo];
+    return c.invalid && (c.dirty || c.touched);
+  }
+  protected salvar(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    const dados = this.form.getRawValue();
+    if (
+      Number.isNaN(new Date(dados.dataHora).getTime()) ||
+      new Date(dados.dataHora) <= new Date()
+    ) {
+      this.erro.set('Selecione data e hora futuras.');
+      return;
+    }
+    this.salvando.set(true);
+    this.erro.set('');
+    const req = this.id() ? this.api.atualizar(this.id()!, dados) : this.api.criar(dados);
+    req.subscribe({
+      next: () => void this.router.navigate(['/atendimentos']),
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.salvando.set(false);
+      },
+    });
+  }
+  private paraLocal(iso: string): string {
+    const data = new Date(iso);
+    if (Number.isNaN(data.getTime())) return iso.slice(0, 16);
+    return new Date(data.getTime() - data.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\atendimentos\atendimentos-lista\atendimentos-lista.html ==========
+<div class="cabecalho-pagina">
+  <div>
+    <h1>Atendimentos</h1>
+    <p>Agenda de banho, tosa e consultas.</p>
+  </div>
+  <a class="botao" routerLink="novo">+ Agendar atendimento</a>
+</div>
+<div class="barra-filtros">
+  <label for="filtro-status">Status</label>
+  <select id="filtro-status" [value]="status()" (change)="filtrar($any($event.target).value)">
+    <option value="">Todos</option>
+    @for (item of estados; track item) {
+      <option [value]="item">{{ item.replace('_', ' ') }}</option>
+    }
+  </select>
+</div>
+@if (sucesso()) {
+  <p class="alerta sucesso" role="status">{{ sucesso() }}</p>
+}
+@if (erro()) {
+  <p class="alerta erro" role="alert">
+    {{ erro() }}
+    <button type="button" class="botao secundario" (click)="carregar()">Tentar novamente</button>
+  </p>
+}
+@if (carregando()) {
+  <p role="status" class="carregando">Carregando atendimentos...</p>
+} @else if (itens().length === 0) {
+  <p class="vazio">Nenhum atendimento encontrado.</p>
+} @else {
+  <div class="tabela-container">
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Pet</th>
+          <th>Serviço</th>
+          <th>Profissional</th>
+          <th>Data/hora</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (a of itens(); track a._id) {
+          <tr>
+            <td>{{ nome(a.pet, 'pet') }}</td>
+            <td>{{ nome(a.servico, 'servico') }}</td>
+            <td>{{ nome(a.profissional, 'profissional') }}</td>
+            <td>{{ a.dataHora | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span class="etiqueta">{{ a.status.replace('_', ' ') }}</span>
+            </td>
+            <td>
+              <div class="acoes">
+                @if (a.status === 'agendado') {
+                  <a class="botao secundario" [routerLink]="[a._id, 'editar']">Editar</a>
+                }
+                @for (destino of transicoes[a.status]; track destino) {
+                  <button
+                    type="button"
+                    class="botao"
+                    [class.perigo]="destino === 'cancelado'"
+                    [disabled]="operando()"
+                    (click)="avancar(a, destino)"
+                  >
+                    {{
+                      destino === 'em_atendimento'
+                        ? 'Iniciar'
+                        : destino === 'concluido'
+                          ? 'Concluir'
+                          : 'Cancelar'
+                    }}
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\atendimentos\atendimentos-lista\atendimentos-lista.ts ==========
+import { DatePipe } from '@angular/common';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
+import { idDe, Referencia } from '../../../core/models/referencia';
+import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
+import { PetsService } from '../../pets/services/pets.service';
+import { ServicosService } from '../../servicos/services/servicos.service';
+import { ProfissionaisService } from '../../profissionais/services/profissionais.service';
+import { Atendimento, STATUS, Status, TRANSICOES } from '../atendimento.model';
+import { AtendimentosService } from '../services/atendimentos.service';
+@Component({
+  selector: 'app-atendimentos-lista',
+  imports: [DatePipe, RouterLink],
+  templateUrl: './atendimentos-lista.html',
+})
+export class AtendimentosLista implements OnInit {
+  private readonly api = inject(AtendimentosService);
+  private readonly confirmacao = inject(ConfirmacaoService);
+  private readonly petsService = inject(PetsService);
+  private readonly servicosService = inject(ServicosService);
+  private readonly profissionaisService = inject(ProfissionaisService);
+  protected readonly estados = STATUS;
+  protected readonly transicoes = TRANSICOES;
+  protected readonly itens = signal<Atendimento[]>([]);
+  protected readonly carregando = signal(true);
+  protected readonly operando = signal(false);
+  protected readonly erro = signal('');
+  protected readonly sucesso = signal('');
+  protected readonly status = signal<Status | ''>('');
+  protected readonly nomesPets = signal<Record<string, string>>({});
+  protected readonly nomesServicos = signal<Record<string, string>>({});
+  protected readonly nomesProfissionais = signal<Record<string, string>>({});
+  ngOnInit(): void {
+    forkJoin({
+      pets: this.petsService.listar(),
+      servicos: this.servicosService.listarTodos(),
+      profissionais: this.profissionaisService.listar(),
+    }).subscribe({
+      next: ({ pets, servicos, profissionais }) => {
+        this.nomesPets.set(Object.fromEntries(pets.map((x) => [x._id, x.nome])));
+        this.nomesServicos.set(Object.fromEntries(servicos.map((x) => [x._id, x.nome])));
+        this.nomesProfissionais.set(Object.fromEntries(profissionais.map((x) => [x._id, x.nome])));
+      },
+      error: () => this.erro.set('Não foi possível carregar alguns nomes de referência.'),
+    });
+    this.carregar();
+  }
+  protected nome(ref: Referencia, tipo: 'pet' | 'servico' | 'profissional'): string {
+    const id = idDe(ref);
+    const mapa =
+      tipo === 'pet'
+        ? this.nomesPets()
+        : tipo === 'servico'
+          ? this.nomesServicos()
+          : this.nomesProfissionais();
+    return (
+      mapa[id] ??
+      (typeof ref === 'object' && typeof ref['nome'] === 'string' ? String(ref['nome']) : id)
+    );
+  }
+  protected filtrar(valor: string): void {
+    this.status.set(valor as Status | '');
+    this.carregar();
+  }
+  protected carregar(): void {
+    this.carregando.set(true);
+    this.erro.set('');
+    this.api.listar(this.status() || undefined).subscribe({
+      next: (xs) => {
+        this.itens.set(xs);
+        this.carregando.set(false);
+      },
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.carregando.set(false);
+      },
+    });
+  }
+  protected async avancar(a: Atendimento, destino: Status): Promise<void> {
+    if (this.operando()) return;
+    const cancelamento = destino === 'cancelado';
+    const verbo = destino === 'em_atendimento' ? 'Iniciar' : destino === 'concluido' ? 'Concluir' : 'Cancelar';
+    const aceitou = await this.confirmacao.confirmar({
+      titulo: cancelamento ? 'Cancelar atendimento?' : `${verbo} atendimento?`,
+      descricao: cancelamento
+        ? `Tem certeza que deseja cancelar o atendimento de ${this.nome(a.pet, 'pet')}?`
+        : `Confirma a mudança de status do atendimento de ${this.nome(a.pet, 'pet')} para "${destino.replace('_', ' ')}"?`,
+      textoConfirmar: cancelamento ? 'Sim, cancelar' : `Sim, ${verbo.toLowerCase()}`,
+      tipo: cancelamento ? 'perigo' : 'padrao',
+    });
+    if (!aceitou) return;
+    this.operando.set(true);
+    this.erro.set('');
+    this.sucesso.set('');
+    this.api.mudarStatus(a._id, destino).subscribe({
+      next: () => {
+        this.operando.set(false);
+        this.sucesso.set('Status alterado com sucesso.');
+        this.carregar();
+      },
+      error: (e: Error) => {
+        this.operando.set(false);
+        this.erro.set(e.message);
+      },
+    });
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\atendimentos\services\atendimentos-mock.service.ts ==========
+import { Injectable } from '@angular/core';
+import { delay, Observable, of, throwError } from 'rxjs';
+import { idDe } from '../../../core/models/referencia';
+import { Atendimento, AtendimentoEntrada, Status, TRANSICOES } from '../atendimento.model';
+import { AtendimentosService } from './atendimentos.service';
+
+/** Somente demonstração C1: segurança efetiva das regras exige validação no back-end. */
+@Injectable()
+export class AtendimentosMockService extends AtendimentosService {
+  private readonly atraso = 300;
+  private proximoId = 4;
+  private readonly futuro = (dias: number, hora: number) => {
+    const data = new Date();
+    data.setDate(data.getDate() + dias);
+    data.setHours(hora, 0, 0, 0);
+    const local = new Date(data.getTime() - data.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
+  };
+  private atendimentos: Atendimento[] = [
+    {
+      _id: '1',
+      pet: '1',
+      servico: '1',
+      profissional: '1',
+      dataHora: this.futuro(3, 10),
+      status: 'agendado',
+      observacoes: 'Pet com medo de secador',
+    },
+    {
+      _id: '2',
+      pet: '2',
+      servico: '2',
+      profissional: '2',
+      dataHora: this.futuro(4, 14),
+      status: 'agendado',
+    },
+    {
+      _id: '3',
+      pet: '3',
+      servico: '1',
+      profissional: '1',
+      dataHora: this.futuro(5, 11),
+      status: 'agendado',
+    },
+  ];
+
+  listar(status?: Status): Observable<Atendimento[]> {
+    return of(
+      this.atendimentos
+        .filter((a) => !status || a.status === status)
+        .map((a) => ({ ...a }))
+        .sort((a, b) => a.dataHora.localeCompare(b.dataHora)),
+    ).pipe(delay(this.atraso));
+  }
+  buscarPorId(id: string): Observable<Atendimento> {
+    const a = this.atendimentos.find((item) => item._id === id);
+    return a
+      ? of({ ...a }).pipe(delay(this.atraso))
+      : throwError(() => new Error('Atendimento não encontrado.'));
+  }
+  criar(dados: AtendimentoEntrada): Observable<Atendimento> {
+    const erro = this.validar(dados);
+    if (erro) return throwError(() => new Error(erro));
+    const novo: Atendimento = { ...dados, _id: String(this.proximoId++), status: 'agendado' };
+    this.atendimentos.push(novo);
+    return of({ ...novo }).pipe(delay(this.atraso));
+  }
+  atualizar(id: string, dados: AtendimentoEntrada): Observable<Atendimento> {
+    const pos = this.atendimentos.findIndex((a) => a._id === id);
+    if (pos < 0) return throwError(() => new Error('Atendimento não encontrado.'));
+    if (this.atendimentos[pos].status !== 'agendado') {
+      return throwError(() => new Error('Somente atendimentos agendados podem ser editados.'));
+    }
+    const erro = this.validar(dados, id);
+    if (erro) return throwError(() => new Error(erro));
+    const atualizado = { ...this.atendimentos[pos], ...dados };
+    this.atendimentos[pos] = atualizado;
+    return of({ ...atualizado }).pipe(delay(this.atraso));
+  }
+  mudarStatus(id: string, status: Status): Observable<Atendimento> {
+    const a = this.atendimentos.find((item) => item._id === id);
+    if (!a) return throwError(() => new Error('Atendimento não encontrado.'));
+    if (!TRANSICOES[a.status].includes(status)) {
+      return throwError(
+        () => new Error(`Não é possível passar de "${a.status}" para "${status}".`),
+      );
+    }
+    a.status = status;
+    return of({ ...a }).pipe(delay(this.atraso));
+  }
+  private validar(dados: AtendimentoEntrada, idAtual?: string): string | null {
+    if (!dados.pet || !dados.servico || !dados.profissional || !dados.dataHora)
+      return 'Preencha todos os campos obrigatórios.';
+    if (
+      Number.isNaN(new Date(dados.dataHora).getTime()) ||
+      new Date(dados.dataHora) <= new Date()
+    ) {
+      return 'O atendimento precisa ser agendado para o futuro.';
+    }
+    if ((dados.observacoes ?? '').length > 300)
+      return 'Observações devem ter no máximo 300 caracteres.';
+    const conflito = this.atendimentos.some(
+      (a) =>
+        a._id !== idAtual &&
+        a.status !== 'cancelado' &&
+        idDe(a.profissional) === dados.profissional &&
+        new Date(a.dataHora).getTime() === new Date(dados.dataHora).getTime(),
+    );
+    if (conflito) return 'O profissional já tem um atendimento neste horário.';
+    return null;
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\atendimentos\services\atendimentos.service.ts ==========
+import { Observable } from 'rxjs';
+import { Atendimento, AtendimentoEntrada, Status } from '../atendimento.model';
+export abstract class AtendimentosService {
+  abstract listar(status?: Status): Observable<Atendimento[]>;
+  abstract buscarPorId(id: string): Observable<Atendimento>;
+  abstract criar(dados: AtendimentoEntrada): Observable<Atendimento>;
+  abstract atualizar(id: string, dados: AtendimentoEntrada): Observable<Atendimento>;
+  abstract mudarStatus(id: string, status: Status): Observable<Atendimento>;
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\atendimentos\atendimento.model.ts ==========
+import { Referencia } from '../../core/models/referencia';
+export const STATUS = ['agendado', 'em_atendimento', 'concluido', 'cancelado'] as const;
+export type Status = (typeof STATUS)[number];
+export const TRANSICOES: Record<Status, Status[]> = {
+  agendado: ['em_atendimento', 'cancelado'],
+  em_atendimento: ['concluido'],
+  concluido: [],
+  cancelado: [],
+};
+export interface Atendimento {
+  _id: string;
+  pet: Referencia;
+  servico: Referencia;
+  profissional: Referencia;
+  dataHora: string;
+  observacoes?: string;
+  status: Status;
+  createdAt?: string;
+  updatedAt?: string;
+}
+export interface AtendimentoEntrada {
+  pet: string;
+  servico: string;
+  profissional: string;
+  dataHora: string;
+  observacoes?: string;
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\atendimentos\atendimentos.routes.ts ==========
+import { Routes } from '@angular/router';
+import { AtendimentosLista } from './atendimentos-lista/atendimentos-lista';
+import { AtendimentoForm } from './atendimento-form/atendimento-form';
+export const ATENDIMENTOS_ROUTES: Routes = [
+  { path: '', component: AtendimentosLista, title: 'Atendimentos' },
+  { path: 'novo', component: AtendimentoForm, title: 'Agendar atendimento' },
+  { path: ':id/editar', component: AtendimentoForm, title: 'Editar atendimento' },
+];
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\pets\pet-card\pet-card.html ==========
+
+<article class="pet-card">
+  <div class="pet-info">
+    <h3>{{ pet().nome }}</h3>
+
+    <p>
+      <strong>Espécie:</strong>
+      {{ pet().especie }}
+    </p>
+
+    @if (pet().raca) {
+      <p>
+        <strong>Raça:</strong>
+        {{ pet().raca }}
+      </p>
+    }
+
+    @if (pet().dataNascimento) {
+      <p>
+        <strong>Nascimento:</strong>
+        {{ pet().dataNascimento }}
+      </p>
+    }
+
+    <p>
+      <strong>Tutor:</strong>
+      {{ pet().tutor }}
+    </p>
+  </div>
+
+  <span class="status" [class.inativo]="!pet().ativo">
+    {{ pet().ativo ? 'Ativo' : 'Inativo' }}
+  </span>
+
+ 
+</article>
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\pets\pet-card\pet-card.ts ==========
+
+import { Component, input, output } from '@angular/core';
+import { Pet } from '../pet.model';
+
+@Component({
+  selector: 'app-pet-card',
+  standalone: true,
+  templateUrl: './pet-card.html',
+  styleUrl: './pet-card.css',
+})
+export class PetCard {
+  // Recebe os dados do pet.
+  readonly pet = input.required<Pet>();
+
+  // Comunica à página pai que o usuário quer editar o pet.
+  readonly editar = output<Pet>();
+
+  // Comunica à página pai que o usuário quer excluir o pet.
+  readonly excluir = output<string>();
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\pets\pet-form\pet-form.html ==========
+<form [formGroup]="formulario" (ngSubmit)="salvar()" class="pet-form">
+  <h2>{{ petInicial() ? 'Editar pet' : 'Cadastrar pet' }}</h2>
+
+  @if (erro()) {
+    <p class="erro" role="alert">{{ erro() }}</p>
+  }
+
+  @if (salvando()) {
+    <p role="status">Salvando pet...</p>
+  }
+
+  <label for="nome">Nome *</label>
+  <input id="nome" type="text" formControlName="nome" maxlength="60" />
+  @if (formulario.controls.nome.touched && formulario.controls.nome.invalid) {
+    <small class="erro">Informe um nome entre 2 e 60 caracteres.</small>
+  }
+
+  <label for="especie">Espécie *</label>
+  <select id="especie" formControlName="especie">
+    @for (especie of especies; track especie) {
+      <option [value]="especie">{{ especie }}</option>
+    }
+  </select>
+
+  <label for="raca">Raça</label>
+  <input id="raca" type="text" formControlName="raca" maxlength="60" />
+
+  <label for="dataNascimento">Data de nascimento</label>
+  <input id="dataNascimento" type="date" formControlName="dataNascimento" />
+  @if (dataFutura()) {
+    <small class="erro">A data de nascimento não pode ser futura.</small>
+  }
+
+  <label for="tutor">ID do tutor *</label>
+  <select id="tutor" formControlName="tutor">
+    <option value="">Selecione um tutor</option>
+    @for (t of tutores(); track t._id) {
+      <option [value]="t._id">{{ t.nome }}</option>
+    }
+  </select>
+  @if (formulario.controls.tutor.touched && formulario.controls.tutor.invalid) {
+    <small class="erro">Selecione um tutor.</small>
+  }
+
+  <label class="ativo">
+    <input type="checkbox" formControlName="ativo" />
+    Pet ativo
+  </label>
+
+  <div class="acoes">
+    <button type="submit" [disabled]="formulario.invalid || salvando()">
+      {{ salvando() ? 'Salvando...' : petInicial() ? 'Salvar alterações' : 'Cadastrar pet' }}
+    </button>
+    <button type="button" class="botao-cancelar" (click)="cancelar.emit()">Cancelar</button>
+  </div>
+</form>
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\pets\pet-form\pet-form.ts ==========
+import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { ESPECIES, Pet } from '../pet.model';
+import { PetsService } from '../services/pets.service';
+import { TutoresService } from '../../tutores/services/tutores.service';
+import { Tutor } from '../../tutores/tutor.model';
+
+function dataNascimentoNaoFutura(campo: AbstractControl): ValidationErrors | null {
+  const valor = String(campo.value ?? '');
+  if (!valor) return null;
+  const agora = new Date();
+  const hoje = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+  return valor > hoje ? { dataFutura: true } : null;
+}
+
+@Component({
+  selector: 'app-pet-form',
+  standalone: true,
+  imports: [ReactiveFormsModule],
+  templateUrl: './pet-form.html',
+  styleUrl: './pet-form.css',
+})
+export class PetForm {
+  private readonly fb = inject(FormBuilder);
+  private readonly petsService = inject(PetsService);
+  private readonly tutoresService = inject(TutoresService);
+  readonly tutores = signal<Tutor[]>([]);
+
+  readonly especies = ESPECIES;
+  readonly petInicial = input<Pet | null>(null);
+  readonly salvo = output<void>();
+  readonly cancelar = output<void>();
+
+  readonly salvando = signal(false);
+  readonly erro = signal('');
+
+  readonly formulario = this.fb.nonNullable.group({
+    nome: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(60)]],
+    especie: ['cachorro', Validators.required],
+    raca: ['', Validators.maxLength(60)],
+    dataNascimento: ['', [dataNascimentoNaoFutura]],
+    tutor: ['', Validators.required],
+    ativo: [true],
+  });
+
+  constructor() {
+    this.tutoresService.listar().subscribe({
+      next: (tutores) => this.tutores.set(tutores),
+      error: () => this.erro.set('Não foi possível carregar os tutores.'),
+    });
+    effect(() => {
+      const pet = this.petInicial();
+
+      if (pet) {
+        this.formulario.patchValue({
+          nome: pet.nome,
+          especie: pet.especie,
+          raca: pet.raca ?? '',
+          dataNascimento: pet.dataNascimento ?? '',
+          tutor: pet.tutor,
+          ativo: pet.ativo,
+        });
+      } else {
+        this.formulario.reset({
+          nome: '',
+          especie: 'cachorro',
+          raca: '',
+          dataNascimento: '',
+          tutor: '',
+          ativo: true,
+        });
+      }
+
+      this.erro.set('');
+    });
+  }
+
+  dataFutura(): boolean {
+    const data = this.formulario.controls.dataNascimento.value;
+
+    return !!data && data > new Date().toISOString().slice(0, 10);
+  }
+
+  salvar(): void {
+    if (this.formulario.invalid || this.dataFutura()) {
+      this.formulario.markAllAsTouched();
+      return;
+    }
+
+    this.salvando.set(true);
+    this.erro.set('');
+
+    const dados = this.formulario.getRawValue();
+    const pet = this.petInicial();
+
+    const entrada = {
+      ...dados,
+      especie: dados.especie as (typeof ESPECIES)[number],
+      raca: dados.raca || undefined,
+      dataNascimento: dados.dataNascimento || undefined,
+    };
+
+    const operacao = pet
+      ? this.petsService.atualizar(pet._id, entrada)
+      : this.petsService.criar(entrada);
+
+    operacao.subscribe({
+      next: () => {
+        this.salvando.set(false);
+        this.salvo.emit();
+      },
+      error: (erro: Error) => {
+        this.salvando.set(false);
+        this.erro.set(erro.message || 'Não foi possível salvar o pet.');
+      },
+    });
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\pets\pet-form-pagina\pet-form-pagina.ts ==========
+import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { Pet } from '../pet.model';
+import { PetForm } from '../pet-form/pet-form';
+import { PetsService } from '../services/pets.service';
+@Component({
+  selector: 'app-pet-form-pagina',
+  imports: [PetForm, RouterLink],
+  template: `
+    <h1>{{ id() ? 'Editar pet' : 'Cadastrar pet' }}</h1>
+    @if (erro()) {
+      <p role="alert" class="alerta erro">{{ erro() }}</p>
+    }
+    @if (carregando()) {
+      <p role="status">Carregando pet...</p>
+    } @else {
+      <div class="cartao formulario">
+        <app-pet-form [petInicial]="pet()" (salvo)="voltar()" (cancelar)="voltar()" />
+      </div>
+    }
+    <a routerLink="/pets">Voltar à lista</a>
+  `,
+})
+export class PetFormPagina implements OnInit {
+  private readonly api = inject(PetsService);
+  private readonly router = inject(Router);
+  readonly id = input<string>();
+  protected readonly pet = signal<Pet | null>(null);
+  protected readonly erro = signal('');
+  protected readonly carregando = signal(false);
+  ngOnInit(): void {
+    if (!this.id()) return;
+    this.carregando.set(true);
+    this.api.buscarPorId(this.id()!).subscribe({
+      next: (x) => {
+        this.pet.set(x);
+        this.carregando.set(false);
+      },
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.carregando.set(false);
+      },
+    });
+  }
+  protected voltar(): void {
+    void this.router.navigate(['/pets']);
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\pets\pets-lista\pets-lista.html ==========
+
+<section class="pets-container">
+  <header class="pets-header">
+    <div>
+      <h1>Pets cadastrados</h1>
+      <p>Gerencie os animais cadastrados no PetShop.</p>
+    </div>
+    <a class="botao botao-novo" routerLink="novo">+ Cadastrar pet</a>
+  </header>
+
+  @if (carregando()) {
+    <p role="status">Carregando pets...</p>
+  }
+
+  @if (erro()) {
+    <p class="alerta erro" role="alert">
+      {{ erro() }}
+      <button type="button" (click)="carregarPets()">Tentar novamente</button>
+    </p>
+  }
+
+  @if (sucesso()) {
+    <p class="alerta sucesso" role="status">{{ sucesso() }}</p>
+  }
+
+  <div class="filtro">
+    <label for="filtro-especie">Filtrar por espécie</label>
+    <select
+      id="filtro-especie"
+      [value]="especieSelecionada()"
+      (change)="selecionarEspecie($any($event.target).value)"
+    >
+      <option value="todas">Todas as espécies</option>
+      @for (e of especies; track e) {
+        <option [value]="e">{{ e }}</option>
+      }
+    </select>
+  </div>
+
+  @if (!carregando()) {
+    <div class="pets-lista">
+      @for (pet of petsFiltrados(); track pet._id) {
+        <div class="pet-item">
+          <app-pet-card [pet]="pet" />
+
+          <div class="pet-acoes">
+            <a class="botao secundario" [routerLink]="[pet._id, 'editar']">
+              Editar
+            </a>
+
+            <button
+              type="button"
+              class="botao perigo"
+              (click)="excluirPet(pet._id)"
+            >
+              Excluir
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <p class="vazio">Nenhum pet encontrado.</p>
+      }
+    </div>
+  }
+</section>
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\pets\pets-lista\pets-lista.ts ==========
+import { Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { PetsService } from '../services/pets.service';
+import { PetCard } from '../pet-card/pet-card';
+import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
+import { ESPECIES, Especie, Pet } from '../pet.model';
+
+@Component({
+  selector: 'app-pets-lista',
+  imports: [PetCard, RouterLink],
+  templateUrl: './pets-lista.html',
+  styleUrl: './pets-lista.css',
+})
+export class PetsLista {
+  private readonly api = inject(PetsService);
+  private readonly confirmacao = inject(ConfirmacaoService);
+  readonly especies = ESPECIES;
+  readonly especieSelecionada = signal<Especie | 'todas'>('todas');
+  readonly pets = signal<Pet[]>([]);
+  readonly carregando = signal(true);
+  readonly erro = signal('');
+  readonly sucesso = signal('');
+  readonly petsFiltrados = computed(() =>
+    this.pets().filter(
+      (x) => this.especieSelecionada() === 'todas' || x.especie === this.especieSelecionada(),
+    ),
+  );
+  constructor() {
+    this.carregarPets();
+  }
+  carregarPets(): void {
+    this.carregando.set(true);
+    this.erro.set('');
+    this.api.listar().subscribe({
+      next: (xs) => {
+        this.pets.set(xs);
+        this.carregando.set(false);
+      },
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.carregando.set(false);
+      },
+    });
+  }
+  selecionarEspecie(v: string): void {
+    this.especieSelecionada.set(v as Especie | 'todas');
+  }
+  async excluirPet(id: string): Promise<void> {
+    const nome = this.pets().find((pet) => pet._id === id)?.nome ?? 'este pet';
+    const aceitou = await this.confirmacao.confirmar({
+      titulo: 'Excluir pet?',
+      descricao: `Tem certeza que deseja excluir ${nome}? Esta ação não pode ser desfeita.`,
+      textoConfirmar: 'Sim, excluir',
+      tipo: 'perigo',
+    });
+    if (!aceitou) return;
+    this.erro.set('');
+    this.sucesso.set('');
+    this.api.remover(id).subscribe({
+      next: () => {
+        this.sucesso.set('Pet excluído com sucesso.');
+        this.carregarPets();
+      },
+      error: (e: Error) => this.erro.set(e.message),
+    });
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\pets\services\pets-mock.service.ts ==========
+
+import { Injectable } from '@angular/core';
+import { delay, Observable, of, throwError } from 'rxjs';
+import { Especie, Pet, PetEntrada } from '../pet.model';
+import { PetsService } from './pets.service';
+
+/**
+ * Serviço MOCK de pets.
+ * Guarda os dados em memória e simula o tempo de resposta da API.
+ */
+@Injectable()
+export class PetsMockService extends PetsService {
+  private pets: Pet[] = [
+    {
+      _id: '1',
+      nome: 'Rex',
+      especie: 'cachorro',
+      raca: 'Labrador',
+      dataNascimento: '2022-05-10',
+      tutor: '1',
+      ativo: true,
+    },
+    {
+      _id: '2',
+      nome: 'Mimi',
+      especie: 'gato',
+      raca: 'Siamês',
+      dataNascimento: '2023-08-15',
+      tutor: '2',
+      ativo: true,
+    },
+    {
+      _id: '3',
+      nome: 'Pipoca',
+      especie: 'ave',
+      raca: 'Calopsita',
+      tutor: '1',
+      ativo: true,
+    },
+  ];
+
+  private proximoId = 4;
+  private readonly atraso = 400;
+
+  listar(especie?: Especie): Observable<Pet[]> {
+    const lista = especie
+      ? this.pets.filter((pet) => pet.especie === especie)
+      : this.pets;
+
+    return of(
+      [...lista].sort((a, b) => a.nome.localeCompare(b.nome)),
+    ).pipe(delay(this.atraso));
+  }
+
+  buscarPorId(id: string): Observable<Pet> {
+    const pet = this.pets.find((item) => item._id === id);
+
+    return pet
+      ? of({ ...pet }).pipe(delay(this.atraso))
+      : throwError(() => new Error(`Pet ${id} não encontrado`));
+  }
+
+  criar(dados: PetEntrada): Observable<Pet> {
+    const novo: Pet = {
+      ...dados,
+      _id: String(this.proximoId++),
+    };
+
+    this.pets.push(novo);
+
+    return of({ ...novo }).pipe(delay(this.atraso));
+  }
+
+  atualizar(
+    id: string,
+    dados: Partial<PetEntrada>,
+  ): Observable<Pet> {
+    const indice = this.pets.findIndex((pet) => pet._id === id);
+
+    if (indice < 0) {
+      return throwError(() => new Error(`Pet ${id} não encontrado`));
+    }
+
+    this.pets[indice] = {
+      ...this.pets[indice],
+      ...dados,
+      _id: id,
+    };
+
+    return of({ ...this.pets[indice] }).pipe(delay(this.atraso));
+  }
+
+  remover(id: string): Observable<void> {
+    const existe = this.pets.some((pet) => pet._id === id);
+
+    if (!existe) {
+      return throwError(() => new Error(`Pet ${id} não encontrado`));
+    }
+
+    this.pets = this.pets.filter((pet) => pet._id !== id);
+
+    return of(undefined).pipe(delay(this.atraso));
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\pets\services\pets.service.backup.ts ==========
+
+import { Injectable, signal } from '@angular/core';
+import { Pet, PetEntrada } from '../pet.model';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class PetsService {
+  // Lista inicial fictícia para desenvolver o módulo sem o backend.
+  private readonly petsSignal = signal<Pet[]>([
+    {
+      _id: '1',
+      nome: 'Rex',
+      especie: 'cachorro',
+      raca: 'Labrador',
+      dataNascimento: '2022-05-10',
+      tutor: '1',
+      ativo: true,
+    },
+    {
+      _id: '2',
+      nome: 'Mimi',
+      especie: 'gato',
+      raca: 'Siamês',
+      dataNascimento: '2023-08-15',
+      tutor: '2',
+      ativo: true,
+    },
+  ]);
+
+  // Expõe a lista como um signal somente para leitura.
+  readonly pets = this.petsSignal.asReadonly();
+
+  // Retorna um pet específico pelo ID.
+  buscarPorId(id: string): Pet | undefined {
+    return this.petsSignal().find((pet) => pet._id === id);
+  }
+
+  // Cadastra um novo pet.
+  criar(dados: PetEntrada): void {
+    const novoPet: Pet = {
+      ...dados,
+      _id: crypto.randomUUID(),
+    };
+
+    this.petsSignal.update((pets) => [...pets, novoPet]);
+  }
+
+  // Atualiza os dados de um pet existente.
+  atualizar(id: string, dados: PetEntrada): void {
+    this.petsSignal.update((pets) =>
+      pets.map((pet) =>
+        pet._id === id ? { ...pet, ...dados, _id: id } : pet,
+      ),
+    );
+  }
+
+  // Exclui um pet da lista.
+  excluir(id: string): void {
+    this.petsSignal.update((pets) =>
+      pets.filter((pet) => pet._id !== id),
+    );
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\pets\services\pets.service.ts ==========
+
+import { Observable } from 'rxjs';
+import { Especie, Pet, PetEntrada } from '../pet.model';
+
+/**
+ * CONTRATO do serviço de pets.
+ * A lista e o formulário dependem apenas desta classe abstrata.
+ * O app.config.ts decide qual implementação será utilizada.
+ */
+export abstract class PetsService {
+  abstract listar(especie?: Especie): Observable<Pet[]>;
+
+  abstract buscarPorId(id: string): Observable<Pet>;
+
+  abstract criar(dados: PetEntrada): Observable<Pet>;
+
+  abstract atualizar(
+    id: string,
+    dados: Partial<PetEntrada>,
+  ): Observable<Pet>;
+
+  abstract remover(id: string): Observable<void>;
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\pets\pet.model.ts ==========
+// Espécies permitidas pelo manual do projeto.
+export const ESPECIES = ['cachorro', 'gato', 'ave', 'outro'] as const;
+
+export type Especie = (typeof ESPECIES)[number];
+
+// Representa um pet cadastrado no sistema.
+export interface Pet {
+  _id: string;
+  nome: string;
+  especie: Especie;
+  raca?: string;
+  dataNascimento?: string;
+  tutor: string;
+  ativo: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Dados enviados para criar ou editar um pet.
+// O ID e as datas são gerenciados pelo sistema.
+export type PetEntrada = Omit<
+  Pet,
+  '_id' | 'createdAt' | 'updatedAt'
+>;
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\pets\pets.routes.ts ==========
+import { Routes } from '@angular/router';
+import { PetsLista } from './pets-lista/pets-lista';
+import { PetFormPagina } from './pet-form-pagina/pet-form-pagina';
+export const PETS_ROUTES: Routes = [
+  { path: '', component: PetsLista, title: 'Pets cadastrados' },
+  { path: 'novo', component: PetFormPagina, title: 'Novo pet' },
+  { path: ':id/editar', component: PetFormPagina, title: 'Editar pet' },
+];
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\produtos\produto-card\produto-card.html ==========
+<article class="cartao-produto">
+  <span class="etiqueta">{{ produto().categoria }}</span>
+  <h2>{{ produto().nome }}</h2>
+  <p class="preco">{{ produto().preco | currency: 'BRL' }}</p>
+
+  @if (produto().estoque === 0) {
+    <p class="sem-estoque">Sem estoque</p>
+  } @else {
+    <p class="estoque">{{ produto().estoque }} em estoque</p>
+  }
+
+  <div class="acoes">
+    <a class="botao secundario" [routerLink]="['/produtos', produto()._id, 'editar']">Editar</a>
+    <button type="button" class="botao perigo" (click)="pedirExclusao()">Excluir</button>
+  </div>
+</article>
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\produtos\produto-card\produto-card.ts ==========
+import { CurrencyPipe } from '@angular/common';
+import { Component, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { Produto } from '../produto.model';
+
+/**
+ * Componente REUTILIZÁVEL: mostra um produto em formato de cartão (PDF 02, cap. 4 e 5).
+ * - Recebe dados do componente pai com input()  → [produto]="p"
+ * - Avisa o pai que algo aconteceu com output() → (excluir)="excluir($event)"
+ * Ele não sabe de onde vêm os produtos nem como excluir: quem decide é o pai.
+ */
+@Component({
+  selector: 'app-produto-card',
+  imports: [CurrencyPipe, RouterLink],
+  templateUrl: './produto-card.html',
+})
+export class ProdutoCard {
+  /** Obrigatório: o pai SEMPRE precisa informar o produto. */
+  readonly produto = input.required<Produto>();
+
+  /** Evento que o cartão emite quando o usuário clica em "Excluir". */
+  readonly excluir = output<Produto>();
+
+  protected pedirExclusao(): void {
+    this.excluir.emit(this.produto());
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\produtos\produto-form\produto-form.html ==========
+<div class="cabecalho-pagina">
+  <h1>{{ id() ? 'Editar produto' : 'Novo produto' }}</h1>
+</div>
+
+@if (erro()) {
+  <p class="alerta erro" role="alert">{{ erro() }}</p>
+}
+
+<form class="cartao formulario" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+  <div class="campo">
+    <label for="nome">Nome *</label>
+    <input id="nome" formControlName="nome" [class.invalido]="invalido('nome')" />
+    @if (invalido('nome')) {
+      <small class="msg-erro">Informe um nome entre 3 e 80 caracteres.</small>
+    }
+  </div>
+
+  <div class="campo">
+    <label for="descricao">Descrição</label>
+    <textarea id="descricao" formControlName="descricao" rows="3"></textarea>
+    @if (invalido('descricao')) {
+      <small class="msg-erro">Máximo de 300 caracteres.</small>
+    }
+  </div>
+
+  <div class="linha">
+    <div class="campo">
+      <label for="preco">Preço (R$) *</label>
+      <input id="preco" type="number" step="0.01" formControlName="preco" [class.invalido]="invalido('preco')" />
+      @if (invalido('preco')) {
+        <small class="msg-erro">O preço não pode ser negativo.</small>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="estoque">Estoque *</label>
+      <input id="estoque" type="number" step="1" formControlName="estoque" [class.invalido]="invalido('estoque')" />
+      @if (invalido('estoque')) {
+        <small class="msg-erro">Informe um número inteiro maior ou igual a zero.</small>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="categoria">Categoria *</label>
+      <select id="categoria" formControlName="categoria" [class.invalido]="invalido('categoria')">
+        <option value="" disabled>Selecione...</option>
+        @for (c of categorias; track c) {
+          <option [value]="c">{{ c }}</option>
+        }
+      </select>
+      @if (invalido('categoria')) {
+        <small class="msg-erro">Escolha uma categoria.</small>
+      }
+    </div>
+  </div>
+
+  <div class="acoes-form">
+    <a class="botao secundario" routerLink="/produtos">Cancelar</a>
+    <button type="submit" class="botao" [disabled]="form.invalid || salvando()">
+      {{ salvando() ? 'Salvando...' : 'Salvar' }}
+    </button>
+  </div>
+</form>
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\produtos\produto-form\produto-form.ts ==========
+import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { CATEGORIAS, Categoria, ProdutoEntrada } from '../produto.model';
+import { ProdutosService } from '../services/produtos.service';
+
+/**
+ * Formulário reativo de cadastro e edição (PDF 02, cap. 7).
+ * As mesmas regras do DTO do back-end são validadas aqui para dar
+ * feedback rápido ao usuário — mas quem garante é a API.
+ */
+@Component({
+  selector: 'app-produto-form',
+  imports: [ReactiveFormsModule, RouterLink],
+  templateUrl: './produto-form.html',
+})
+export class ProdutoForm implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly produtosService = inject(ProdutosService);
+
+  /** Vem da rota :id/editar (withComponentInputBinding). Vazio = cadastro. */
+  readonly id = input<string>();
+
+  protected readonly categorias = CATEGORIAS;
+  protected readonly salvando = signal(false);
+  protected readonly erro = signal<string | null>(null);
+
+  protected readonly form = this.fb.nonNullable.group({
+    nome: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(80)]],
+    descricao: ['', [Validators.maxLength(300)]],
+    preco: [0, [Validators.required, Validators.min(0)]],
+    estoque: [0, [Validators.required, Validators.min(0), Validators.pattern(/^\d+$/)]],
+    categoria: ['' as Categoria | '', [Validators.required]],
+  });
+
+  ngOnInit(): void {
+    const id = this.id();
+    if (id) {
+      this.produtosService.buscarPorId(id).subscribe({
+        next: (p) => this.form.patchValue(p),
+        error: (e: Error) => this.erro.set(e.message),
+      });
+    }
+  }
+
+  /** Mostra o erro só depois que o usuário mexeu no campo (touched). */
+  protected invalido(campo: keyof typeof this.form.controls): boolean {
+    const c = this.form.controls[campo];
+    return c.invalid && (c.touched || c.dirty);
+  }
+
+  protected salvar(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.salvando.set(true);
+    this.erro.set(null);
+
+    const dados = this.form.getRawValue() as ProdutoEntrada;
+    const id = this.id();
+    const operacao = id ? this.produtosService.atualizar(id, dados) : this.produtosService.criar(dados);
+
+    operacao.subscribe({
+      next: () => this.router.navigate(['/produtos']),
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.salvando.set(false);
+      },
+    });
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\produtos\produtos-lista\produtos-lista.html ==========
+<div class="cabecalho-pagina">
+  <h1>Produtos</h1>
+  <a class="botao" routerLink="novo">+ Novo produto</a>
+</div>
+
+<div class="barra-filtros">
+  <label for="filtro-categoria">Categoria</label>
+  <select id="filtro-categoria" [value]="filtro()" (change)="filtrar($any($event.target).value)">
+    <option value="">Todas</option>
+    @for (c of categorias; track c) {
+      <option [value]="c">{{ c }}</option>
+    }
+  </select>
+
+  <div class="alternar-modo" role="group" aria-label="Forma de exibição">
+    <button type="button" class="botao secundario" [class.ativo]="modo() === 'tabela'" (click)="modo.set('tabela')">
+      Tabela
+    </button>
+    <button type="button" class="botao secundario" [class.ativo]="modo() === 'cartoes'" (click)="modo.set('cartoes')">
+      Cartões
+    </button>
+  </div>
+</div>
+
+@if (sucesso()) {
+  <p class="alerta sucesso" role="status">{{ sucesso() }}</p>
+}
+@if (erro()) {
+  <p class="alerta erro" role="alert">{{ erro() }}</p>
+}
+
+@if (carregando()) {
+  <p class="carregando">Carregando produtos...</p>
+} @else if (produtos().length === 0) {
+  <p class="vazio">Nenhum produto encontrado.</p>
+} @else if (modo() === 'cartoes') {
+  <!-- Componente filho reutilizável: o pai passa o produto e escuta o evento -->
+  <div class="grade-cartoes">
+    @for (p of produtos(); track p._id) {
+      <app-produto-card [produto]="p" (excluir)="excluir($event)" />
+    }
+  </div>
+} @else {
+  <div class="tabela-container">
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Categoria</th>
+          <th class="numero">Preço</th>
+          <th class="numero">Estoque</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of produtos(); track p._id) {
+          <tr>
+            <td>{{ p.nome }}</td>
+            <td><span class="etiqueta">{{ p.categoria }}</span></td>
+            <td class="numero">{{ p.preco | currency: 'BRL' }}</td>
+            <td class="numero">{{ p.estoque }}</td>
+            <td>
+              <div class="acoes">
+                <a class="botao secundario" [routerLink]="[p._id, 'editar']">Editar</a>
+                <button type="button" class="botao perigo" (click)="excluir(p)">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\produtos\produtos-lista\produtos-lista.ts ==========
+import { CurrencyPipe } from '@angular/common';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { ProdutoCard } from '../produto-card/produto-card';
+import { CATEGORIAS, Categoria, Produto } from '../produto.model';
+import { ProdutosService } from '../services/produtos.service';
+import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
+
+/** Tela de listagem (componente de página — PDF 02, cap. 4). */
+@Component({
+  selector: 'app-produtos-lista',
+  imports: [RouterLink, CurrencyPipe, ProdutoCard],
+  templateUrl: './produtos-lista.html',
+})
+export class ProdutosLista implements OnInit {
+  private readonly produtosService = inject(ProdutosService);
+  private readonly confirmacao = inject(ConfirmacaoService);
+
+  protected readonly categorias = CATEGORIAS;
+  // Estado da tela com signals (PDF 02, cap. 11)
+  protected readonly produtos = signal<Produto[]>([]);
+  protected readonly carregando = signal(false);
+  protected readonly erro = signal<string | null>(null);
+  protected readonly sucesso = signal<string | null>(null);
+  protected readonly filtro = signal<Categoria | ''>('');
+  // Estado LOCAL da tela: como mostrar a lista (aula 02 — @if e componente filho)
+  protected readonly modo = signal<'tabela' | 'cartoes'>('tabela');
+
+  ngOnInit(): void {
+    this.carregar();
+  }
+
+  protected filtrar(valor: string): void {
+    this.filtro.set(valor as Categoria | '');
+    this.carregar();
+  }
+
+  protected carregar(): void {
+    this.carregando.set(true);
+    this.erro.set(null);
+    this.produtosService.listar(this.filtro() || undefined).subscribe({
+      next: (lista) => {
+        this.produtos.set(lista);
+        this.carregando.set(false);
+      },
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.carregando.set(false);
+      },
+    });
+  }
+
+  protected async excluir(produto: Produto): Promise<void> {
+    const aceitou = await this.confirmacao.confirmar({
+      titulo: 'Excluir produto?',
+      descricao: `Tem certeza que deseja excluir o produto "${produto.nome}"? Esta ação não pode ser desfeita.`,
+      textoConfirmar: 'Sim, excluir',
+      tipo: 'perigo',
+    });
+    if (!aceitou) return;
+    this.erro.set(null);
+    this.sucesso.set(null);
+    this.produtosService.remover(produto._id).subscribe({
+      next: () => {
+        this.sucesso.set(`Produto "${produto.nome}" excluído.`);
+        this.carregar();
+      },
+      error: (e: Error) => this.erro.set(e.message),
+    });
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\produtos\services\produtos-api.service.ts ==========
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { catchError, map, Observable, throwError } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { RespostaApi } from '../../../core/models/resposta-api';
+import { Categoria, Produto, ProdutoEntrada } from '../produto.model';
+import { ProdutosService } from './produtos.service';
+
+/**
+ * Serviço que conversa com a API NestJS de verdade (PDF 02, cap. 9).
+ * Ativado quando environment.usarMock = false.
+ */
+@Injectable()
+export class ProdutosApiService extends ProdutosService {
+  private readonly http = inject(HttpClient);
+  private readonly url = `${environment.apiUrl}/produtos`;
+
+  listar(categoria?: Categoria): Observable<Produto[]> {
+    const params = categoria ? new HttpParams().set('categoria', categoria) : undefined;
+    return this.http.get<RespostaApi<Produto[]>>(this.url, { params }).pipe(
+      map((r) => r.dados),
+      catchError(this.tratarErro),
+    );
+  }
+
+  buscarPorId(id: string): Observable<Produto> {
+    return this.http.get<RespostaApi<Produto>>(`${this.url}/${id}`).pipe(
+      map((r) => r.dados),
+      catchError(this.tratarErro),
+    );
+  }
+
+  criar(dados: ProdutoEntrada): Observable<Produto> {
+    return this.http.post<RespostaApi<Produto>>(this.url, dados).pipe(
+      map((r) => r.dados),
+      catchError(this.tratarErro),
+    );
+  }
+
+  atualizar(id: string, dados: Partial<ProdutoEntrada>): Observable<Produto> {
+    return this.http.patch<RespostaApi<Produto>>(`${this.url}/${id}`, dados).pipe(
+      map((r) => r.dados),
+      catchError(this.tratarErro),
+    );
+  }
+
+  remover(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.url}/${id}`).pipe(catchError(this.tratarErro));
+  }
+
+  /** Converte o erro HTTP em uma mensagem amigável para a tela. */
+  private tratarErro(erro: HttpErrorResponse): Observable<never> {
+    let mensagem = 'Não foi possível falar com o servidor. Tente novamente.';
+    const corpo = erro.error as { message?: string | string[] } | null;
+    if (erro.status > 0 && corpo?.message) {
+      mensagem = Array.isArray(corpo.message) ? corpo.message.join(' · ') : corpo.message;
+    }
+    return throwError(() => new Error(mensagem));
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\produtos\services\produtos-mock.service.ts ==========
+import { Injectable } from '@angular/core';
+import { delay, Observable, of, throwError } from 'rxjs';
+import { Categoria, Produto, ProdutoEntrada } from '../produto.model';
+import { ProdutosService } from './produtos.service';
+
+/**
+ * Serviço MOCK: guarda os produtos em memória e simula a API,
+ * inclusive o tempo de resposta e as mesmas regras de negócio.
+ * Usado enquanto o back-end ainda não existe (aulas 02 a 12).
+ */
+@Injectable()
+export class ProdutosMockService extends ProdutosService {
+  private produtos: Produto[] = [
+    { _id: '1', nome: 'Arroz integral 1 kg', preco: 8.9, estoque: 25, categoria: 'alimento', ativo: true },
+    { _id: '2', nome: 'Feijão preto 1 kg', preco: 7.5, estoque: 40, categoria: 'alimento', ativo: true },
+    { _id: '3', nome: 'Sabonete neutro', preco: 2.99, estoque: 60, categoria: 'higiene', ativo: true },
+    { _id: '4', nome: 'Detergente 500 ml', preco: 3.49, estoque: 0, categoria: 'limpeza', ativo: true },
+  ];
+  private proximoId = 5;
+  private readonly atraso = 400; // ms, para enxergar o "carregando..."
+
+  listar(categoria?: Categoria): Observable<Produto[]> {
+    const lista = categoria ? this.produtos.filter((p) => p.categoria === categoria) : this.produtos;
+    return of([...lista].sort((a, b) => a.nome.localeCompare(b.nome))).pipe(delay(this.atraso));
+  }
+
+  buscarPorId(id: string): Observable<Produto> {
+    const produto = this.produtos.find((p) => p._id === id);
+    return produto
+      ? of({ ...produto }).pipe(delay(this.atraso))
+      : throwError(() => new Error(`Produto ${id} não encontrado`));
+  }
+
+  criar(dados: ProdutoEntrada): Observable<Produto> {
+    if (this.produtos.some((p) => p.nome === dados.nome)) {
+      return throwError(() => new Error(`Já existe um produto com o nome "${dados.nome}"`));
+    }
+    const novo: Produto = { ...dados, _id: String(this.proximoId++), ativo: dados.ativo ?? true };
+    this.produtos.push(novo);
+    return of(novo).pipe(delay(this.atraso));
+  }
+
+  atualizar(id: string, dados: Partial<ProdutoEntrada>): Observable<Produto> {
+    const indice = this.produtos.findIndex((p) => p._id === id);
+    if (indice < 0) {
+      return throwError(() => new Error(`Produto ${id} não encontrado`));
+    }
+    this.produtos[indice] = { ...this.produtos[indice], ...dados };
+    return of(this.produtos[indice]).pipe(delay(this.atraso));
+  }
+
+  remover(id: string): Observable<void> {
+    const produto = this.produtos.find((p) => p._id === id);
+    if (produto && produto.estoque > 0) {
+      return throwError(
+        () => new Error('Não é possível excluir um produto com estoque. Zere o estoque ou inative o produto.'),
+      );
+    }
+    this.produtos = this.produtos.filter((p) => p._id !== id);
+    return of(undefined).pipe(delay(this.atraso));
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\produtos\services\produtos.service.ts ==========
+import { Observable } from 'rxjs';
+import { Categoria, Produto, ProdutoEntrada } from '../produto.model';
+
+/**
+ * CONTRATO do serviço de produtos.
+ * Os componentes dependem só desta classe abstrata.
+ * Quem decide se os dados vêm do mock ou da API é o app.config.ts.
+ * Assim, trocar o mock pela API (aula 13) não exige mexer nos componentes.
+ */
+export abstract class ProdutosService {
+  abstract listar(categoria?: Categoria): Observable<Produto[]>;
+  abstract buscarPorId(id: string): Observable<Produto>;
+  abstract criar(dados: ProdutoEntrada): Observable<Produto>;
+  abstract atualizar(id: string, dados: Partial<ProdutoEntrada>): Observable<Produto>;
+  abstract remover(id: string): Observable<void>;
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\produtos\produto.model.ts ==========
+export const CATEGORIAS = ['alimento', 'higiene', 'limpeza', 'outros'] as const;
+export type Categoria = (typeof CATEGORIAS)[number];
+
+/** Produto como a API devolve (segue o contrato da API). */
+export interface Produto {
+  _id: string;
+  nome: string;
+  descricao?: string;
+  preco: number;
+  estoque: number;
+  categoria: Categoria;
+  ativo: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/** Dados enviados para criar ou editar (sem _id e datas). */
+export type ProdutoEntrada = Omit<Produto, '_id' | 'ativo' | 'createdAt' | 'updatedAt'> & {
+  ativo?: boolean;
+};
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\produtos\produtos.routes.ts ==========
+import { Routes } from '@angular/router';
+import { ProdutoForm } from './produto-form/produto-form';
+import { ProdutosLista } from './produtos-lista/produtos-lista';
+
+export const PRODUTOS_ROUTES: Routes = [
+  { path: '', component: ProdutosLista, title: 'Produtos' },
+  { path: 'novo', component: ProdutoForm, title: 'Novo produto' },
+  { path: ':id/editar', component: ProdutoForm, title: 'Editar produto' },
+];
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\profissionais\profissionais-lista\profissionais-lista.html ==========
+<div class="cabecalho-pagina">
+  <h1>Profissionais</h1>
+  <a class="botao" routerLink="novo">+ Novo profissional</a>
+</div>
+<div class="barra-filtros">
+  <label for="filtro-prof">Função</label
+  ><select id="filtro-prof" [value]="filtro()" (change)="filtrar($any($event.target).value)">
+    <option value="">Todas</option>
+    @for (f of funcoes; track f) {
+      <option [value]="f">{{ f }}</option>
+    }
+  </select>
+</div>
+@if (sucesso()) {
+  <p class="alerta sucesso" role="status">{{ sucesso() }}</p>
+}
+@if (erro()) {
+  <p class="alerta erro" role="alert">
+    {{ erro() }} <button type="button" (click)="carregar()">Tentar novamente</button>
+  </p>
+}
+@if (carregando()) {
+  <p role="status">Carregando profissionais...</p>
+} @else if (filtrados().length === 0) {
+  <p class="vazio">Nenhum profissional encontrado.</p>
+} @else {
+  <div class="tabela-container">
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Função</th>
+          <th>Telefone</th>
+          <th>E-mail</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of filtrados(); track p._id) {
+          <tr>
+            <td>{{ p.nome }}</td>
+            <td>{{ p.funcao }}</td>
+            <td>{{ p.telefone }}</td>
+            <td>{{ p.email }}</td>
+            <td>
+              <div class="acoes">
+                <a class="botao secundario" [routerLink]="[p._id, 'editar']">Editar</a
+                ><button class="botao perigo" type="button" (click)="excluir(p)">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\profissionais\profissionais-lista\profissionais-lista.ts ==========
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { FUNCOES, Funcao, Profissional } from '../profissional.model';
+import { ProfissionaisService } from '../services/profissionais.service';
+import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
+@Component({
+  selector: 'app-profissionais-lista',
+  imports: [RouterLink],
+  templateUrl: './profissionais-lista.html',
+})
+export class ProfissionaisLista implements OnInit {
+  private readonly api = inject(ProfissionaisService);
+  private readonly confirmacao = inject(ConfirmacaoService);
+  protected readonly funcoes = FUNCOES;
+  protected readonly itens = signal<Profissional[]>([]);
+  protected readonly filtro = signal<Funcao | ''>('');
+  protected readonly filtrados = computed(() =>
+    this.itens().filter((x) => !this.filtro() || x.funcao === this.filtro()),
+  );
+  protected readonly erro = signal('');
+  protected readonly sucesso = signal('');
+  protected readonly carregando = signal(true);
+  ngOnInit(): void {
+    this.carregar();
+  }
+  protected filtrar(v: string): void {
+    this.filtro.set(v as Funcao | '');
+  }
+  protected carregar(): void {
+    this.carregando.set(true);
+    this.erro.set('');
+    this.api.listar().subscribe({
+      next: (xs) => {
+        this.itens.set(xs);
+        this.carregando.set(false);
+      },
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.carregando.set(false);
+      },
+    });
+  }
+  protected async excluir(p: Profissional): Promise<void> {
+    const aceitou = await this.confirmacao.confirmar({
+      titulo: 'Excluir profissional?',
+      descricao: `Tem certeza que deseja excluir "${p.nome}" da lista de profissionais?`,
+      textoConfirmar: 'Sim, excluir',
+      tipo: 'perigo',
+    });
+    if (!aceitou) return;
+    this.erro.set('');
+    this.sucesso.set('');
+    this.api.remover(p._id).subscribe({
+      next: () => {
+        this.sucesso.set('Profissional excluído.');
+        this.carregar();
+      },
+      error: (e: Error) => this.erro.set(e.message),
+    });
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\profissionais\profissional-form\profissional-form.html ==========
+<h1>{{ id() ? 'Editar profissional' : 'Novo profissional' }}</h1>
+@if (erro()) {
+  <p role="alert" class="alerta erro">{{ erro() }}</p>
+}
+@if (carregando()) {
+  <p role="status">Carregando profissional...</p>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="salvar()" class="cartao formulario" novalidate>
+    <div class="campo">
+      <label for="nome-prof">Nome *</label
+      ><input id="nome-prof" formControlName="nome" maxlength="80" />
+      @if (invalido('nome')) {
+        <small class="msg-erro">Informe entre 3 e 80 caracteres.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="funcao-prof">Função *</label
+      ><select id="funcao-prof" formControlName="funcao">
+        <option value="">Selecione</option>
+        @for (f of funcoes; track f) {
+          <option [value]="f">{{ f }}</option>
+        }
+      </select>
+      @if (invalido('funcao')) {
+        <small class="msg-erro">Selecione a função.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="telefone-prof">Telefone *</label
+      ><input
+        id="telefone-prof"
+        type="tel"
+        placeholder="(51) 99999-9999"
+        formControlName="telefone"
+      />
+      @if (invalido('telefone')) {
+        <small class="msg-erro">Use (51) 99999-9999.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="email-prof">E-mail *</label
+      ><input id="email-prof" type="email" formControlName="email" />
+      @if (invalido('email')) {
+        <small class="msg-erro">Informe um e-mail válido.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="crmv-prof"
+        >CRMV {{ form.controls.funcao.value === 'veterinario' ? '*' : '' }}</label
+      ><input id="crmv-prof" formControlName="crmv" maxlength="20" />
+      @if (invalido('crmv')) {
+        <small class="msg-erro">Máximo de 20 caracteres.</small>
+      }
+    </div>
+    <div class="acoes-form">
+      <a routerLink="/profissionais" class="botao secundario">Cancelar</a
+      ><button class="botao" type="submit" [disabled]="form.invalid || salvando()">
+        {{ salvando() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </form>
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\profissionais\profissional-form\profissional-form.ts ==========
+import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { FUNCOES, Funcao } from '../profissional.model';
+import { ProfissionaisService } from '../services/profissionais.service';
+@Component({
+  selector: 'app-profissional-form',
+  imports: [ReactiveFormsModule, RouterLink],
+  templateUrl: './profissional-form.html',
+})
+export class ProfissionalForm implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly api = inject(ProfissionaisService);
+  private readonly router = inject(Router);
+  readonly id = input<string>();
+  protected readonly funcoes = FUNCOES;
+  protected readonly carregando = signal(false);
+  protected readonly salvando = signal(false);
+  protected readonly erro = signal('');
+  protected readonly form = this.fb.nonNullable.group({
+    nome: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(80)]],
+    funcao: ['' as Funcao | '', Validators.required],
+    telefone: ['', [Validators.required, Validators.pattern(/^\(\d{2}\) \d{5}-\d{4}$/)]],
+    email: ['', [Validators.required, Validators.email]],
+    crmv: ['', Validators.maxLength(20)],
+  });
+  ngOnInit(): void {
+    if (!this.id()) return;
+    this.carregando.set(true);
+    this.api.buscarPorId(this.id()!).subscribe({
+      next: (p) => {
+        this.form.patchValue(p);
+        this.carregando.set(false);
+      },
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.carregando.set(false);
+      },
+    });
+  }
+  protected invalido(k: keyof typeof this.form.controls): boolean {
+    const c = this.form.controls[k];
+    return c.invalid && (c.touched || c.dirty);
+  }
+  protected salvar(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    const dados = this.form.getRawValue();
+    if (dados.funcao === 'veterinario' && !dados.crmv.trim()) {
+      this.erro.set('O CRMV é obrigatório para veterinários.');
+      return;
+    }
+    this.salvando.set(true);
+    this.erro.set('');
+    const entrada = { ...dados, funcao: dados.funcao as Funcao, crmv: dados.crmv || undefined };
+    const req = this.id() ? this.api.atualizar(this.id()!, entrada) : this.api.criar(entrada);
+    req.subscribe({
+      next: () => void this.router.navigate(['/profissionais']),
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.salvando.set(false);
+      },
+    });
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\profissionais\services\profissionais-mock.service.ts ==========
+import { Injectable } from '@angular/core';
+import { delay, Observable, of, throwError } from 'rxjs';
+import { Profissional, ProfissionalEntrada } from '../profissional.model';
+import { ProfissionaisService } from './profissionais.service';
+@Injectable()
+export class ProfissionaisMockService extends ProfissionaisService {
+  private itens: Profissional[] = [
+    {
+      _id: '1',
+      nome: 'Carla Oliveira',
+      funcao: 'banhista',
+      telefone: '(51) 99999-1111',
+      email: 'carla@petshop.com',
+      ativo: true,
+    },
+    {
+      _id: '2',
+      nome: 'Rafael Martins',
+      funcao: 'tosador',
+      telefone: '(51) 99999-2222',
+      email: 'rafael@petshop.com',
+      ativo: true,
+    },
+    {
+      _id: '3',
+      nome: 'Dra. Fernanda Lima',
+      funcao: 'veterinario',
+      telefone: '(51) 99999-3333',
+      email: 'fernanda@petshop.com',
+      crmv: 'CRMV-RS 12345',
+      ativo: true,
+    },
+  ];
+  private sequencia = 4;
+  listar(): Observable<Profissional[]> {
+    return of(this.itens.map((x) => ({ ...x }))).pipe(delay(300));
+  }
+  buscarPorId(id: string): Observable<Profissional> {
+    const x = this.itens.find((x) => x._id === id);
+    return x
+      ? of({ ...x }).pipe(delay(300))
+      : throwError(() => new Error('Profissional não encontrado.'));
+  }
+  criar(item: ProfissionalEntrada): Observable<Profissional> {
+    const erro = this.validar(item);
+    if (erro) return throwError(() => new Error(erro));
+    const x = { ...item, _id: String(this.sequencia++), ativo: true };
+    this.itens.push(x);
+    return of({ ...x }).pipe(delay(300));
+  }
+  atualizar(id: string, item: ProfissionalEntrada): Observable<Profissional> {
+    const pos = this.itens.findIndex((x) => x._id === id);
+    if (pos < 0) return throwError(() => new Error('Profissional não encontrado.'));
+    const erro = this.validar(item, id);
+    if (erro) return throwError(() => new Error(erro));
+    const x = { ...this.itens[pos], ...item };
+    this.itens[pos] = x;
+    return of({ ...x }).pipe(delay(300));
+  }
+  remover(id: string): Observable<void> {
+    const pos = this.itens.findIndex((x) => x._id === id);
+    if (pos < 0) return throwError(() => new Error('Profissional não encontrado.'));
+    this.itens.splice(pos, 1);
+    return of(undefined).pipe(delay(300));
+  }
+  private validar(x: ProfissionalEntrada, id?: string): string | null {
+    if (x.nome.trim().length < 3 || x.nome.length > 80) return 'Nome entre 3 e 80 caracteres.';
+    if (!/^\(\d{2}\) \d{5}-\d{4}$/.test(x.telefone))
+      return 'Telefone inválido. Use (51) 99999-9999.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x.email)) return 'E-mail inválido.';
+    if (this.itens.some((y) => y._id !== id && y.email.toLowerCase() === x.email.toLowerCase()))
+      return 'Já existe um profissional com este e-mail.';
+    if (x.funcao === 'veterinario' && !x.crmv?.trim())
+      return 'O CRMV é obrigatório para veterinários.';
+    if ((x.crmv || '').length > 20) return 'CRMV limitado a 20 caracteres.';
+    return null;
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\profissionais\services\profissionais.service.ts ==========
+import { Observable } from 'rxjs';
+import { Profissional, ProfissionalEntrada } from '../profissional.model';
+export abstract class ProfissionaisService {
+  abstract listar(): Observable<Profissional[]>;
+  abstract buscarPorId(id: string): Observable<Profissional>;
+  abstract criar(dados: ProfissionalEntrada): Observable<Profissional>;
+  abstract atualizar(id: string, dados: ProfissionalEntrada): Observable<Profissional>;
+  abstract remover(id: string): Observable<void>;
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\profissionais\profissionais.routes.ts ==========
+import { Routes } from '@angular/router';
+import { ProfissionaisLista } from './profissionais-lista/profissionais-lista';
+import { ProfissionalForm } from './profissional-form/profissional-form';
+export const PROFISSIONAIS_ROUTES: Routes = [
+  { path: '', component: ProfissionaisLista, title: 'Profissionais' },
+  { path: 'novo', component: ProfissionalForm, title: 'Novo profissional' },
+  { path: ':id/editar', component: ProfissionalForm, title: 'Editar profissional' },
+];
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\profissionais\profissional.model.ts ==========
+export const FUNCOES = ['banhista', 'tosador', 'veterinario'] as const;
+export type Funcao = (typeof FUNCOES)[number];
+export interface Profissional {
+  _id: string;
+  nome: string;
+  funcao: Funcao;
+  telefone: string;
+  email: string;
+  crmv?: string;
+  ativo: boolean;
+}
+export type ProfissionalEntrada = Omit<Profissional, '_id' | 'ativo'>;
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\relatorios\relatorios-painel\relatorios-painel.html ==========
+<div class="cabecalho-pagina">
+  <h1>Relatórios</h1>
+  <button class="botao secundario" type="button" (click)="carregar()">Atualizar painel</button>
+</div>
+<p>Indicadores demonstrativos calculados dos dados em memória (modo mock).</p>
+@if (erro()) {
+  <p class="alerta erro" role="alert">{{ erro() }}</p>
+}
+@if (carregando()) {
+  <p role="status">Carregando relatórios...</p>
+} @else {
+  <div class="indicadores">
+    <article class="cartao">
+      <h2>Tutores</h2>
+      <strong>{{ resumo().tutores }}</strong>
+    </article>
+    <article class="cartao">
+      <h2>Pets</h2>
+      <strong>{{ resumo().pets }}</strong>
+    </article>
+    <article class="cartao">
+      <h2>Agendados</h2>
+      <strong>{{ resumo().atendimentosAgendados }}</strong>
+    </article>
+  </div>
+  <h2>Atendimentos por status</h2>
+  <div class="tabela-container">
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Quantidade</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of porStatus(); track s.status) {
+          <tr>
+            <td>{{ s.status.replace('_', ' ') }}</td>
+            <td>{{ s.quantidade }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <h2>Faturamento por serviço (concluídos)</h2>
+  <div class="tabela-container">
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Serviço</th>
+          <th>Atendimentos</th>
+          <th>Faturamento estimado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of porServico(); track s.servico) {
+          <tr>
+            <td>{{ s.servico }}</td>
+            <td>{{ s.quantidade }}</td>
+            <td>{{ s.faturamento | currency: 'BRL' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  @if (resumo().tutores === 0 && resumo().pets === 0 && resumo().atendimentosAgendados === 0) {
+    <p class="vazio">Sem dados disponíveis para o período.</p>
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\relatorios\relatorios-painel\relatorios-painel.ts ==========
+import { CurrencyPipe } from '@angular/common';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { forkJoin } from 'rxjs';
+import { TutoresService } from '../../tutores/services/tutores.service';
+import { PetsService } from '../../pets/services/pets.service';
+import { AtendimentosService } from '../../atendimentos/services/atendimentos.service';
+import { ServicosService } from '../../servicos/services/servicos.service';
+import { STATUS, Status } from '../../atendimentos/atendimento.model';
+import { idDe } from '../../../core/models/referencia';
+@Component({
+  selector: 'app-relatorios-painel',
+  imports: [CurrencyPipe],
+  templateUrl: './relatorios-painel.html',
+})
+export class RelatoriosPainel implements OnInit {
+  private readonly tutores = inject(TutoresService);
+  private readonly pets = inject(PetsService);
+  private readonly atendimentos = inject(AtendimentosService);
+  private readonly servicos = inject(ServicosService);
+  protected readonly carregando = signal(true);
+  protected readonly erro = signal('');
+  protected readonly resumo = signal({ tutores: 0, pets: 0, atendimentosAgendados: 0 });
+  protected readonly porStatus = signal<{ status: Status; quantidade: number }[]>([]);
+  protected readonly porServico = signal<
+    { servico: string; quantidade: number; faturamento: number }[]
+  >([]);
+  ngOnInit(): void {
+    this.carregar();
+  }
+  protected carregar(): void {
+    this.carregando.set(true);
+    this.erro.set('');
+    // C1: calcula indicadores locais a partir dos mocks. A API real será integrada no C4.
+    forkJoin({
+      tutores: this.tutores.listar(),
+      pets: this.pets.listar(),
+      atendimentos: this.atendimentos.listar(),
+      servicos: this.servicos.listarTodos(),
+    }).subscribe({
+      next: ({ tutores, pets, atendimentos, servicos }) => {
+        this.resumo.set({
+          tutores: tutores.length,
+          pets: pets.length,
+          atendimentosAgendados: atendimentos.filter((a) => a.status === 'agendado').length,
+        });
+        this.porStatus.set(
+          STATUS.map((status) => ({
+            status,
+            quantidade: atendimentos.filter((a) => a.status === status).length,
+          })),
+        );
+        this.porServico.set(
+          servicos.map((servico) => {
+            const concluidos = atendimentos.filter(
+              (a) => a.status === 'concluido' && idDe(a.servico) === servico._id,
+            );
+            return {
+              servico: servico.nome,
+              quantidade: concluidos.length,
+              faturamento: concluidos.length * servico.preco,
+            };
+          }),
+        );
+        this.carregando.set(false);
+      },
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.carregando.set(false);
+      },
+    });
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\relatorios\relatorios.routes.ts ==========
+import { Routes } from '@angular/router';
+import { RelatoriosPainel } from './relatorios-painel/relatorios-painel';
+export const RELATORIOS_ROUTES: Routes = [
+  { path: '', component: RelatoriosPainel, title: 'Relatórios' },
+];
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\servicos\services\servicos-mock.service.ts ==========
+import { Injectable } from '@angular/core';
+import { Observable, delay, of, throwError } from 'rxjs';
+import { Servico, ServicoEntrada } from '../servico.model';
+import { ServicosService } from './servicos.service';
+@Injectable()
+export class ServicosMockService extends ServicosService {
+  private dados: Servico[] = [
+    { _id: '1', nome: 'Banho', categoria: 'banho', preco: 60, duracaoMinutos: 60, ativo: true },
+    { _id: '2', nome: 'Tosa', categoria: 'tosa', preco: 80, duracaoMinutos: 90, ativo: true },
+    {
+      _id: '3',
+      nome: 'Consulta veterinária',
+      categoria: 'veterinario',
+      preco: 150,
+      duracaoMinutos: 30,
+      ativo: true,
+    },
+  ];
+  private sequencia = 4;
+  listar(): Observable<Servico[]> {
+    return of(this.dados.filter((x) => x.ativo).map((x) => ({ ...x }))).pipe(delay(300));
+  }
+  listarTodos(): Observable<Servico[]> {
+    return of(this.dados.map((x) => ({ ...x }))).pipe(delay(300));
+  }
+  buscarPorId(id: string): Observable<Servico> {
+    const item = this.dados.find((x) => x._id === id);
+    return item
+      ? of({ ...item }).pipe(delay(300))
+      : throwError(() => new Error('Serviço não encontrado.'));
+  }
+  criar(item: ServicoEntrada): Observable<Servico> {
+    const erro = this.validar(item);
+    if (erro) return throwError(() => new Error(erro));
+    const novo = { ...item, _id: String(this.sequencia++), ativo: true };
+    this.dados.push(novo);
+    return of({ ...novo }).pipe(delay(300));
+  }
+  atualizar(id: string, item: ServicoEntrada): Observable<Servico> {
+    const pos = this.dados.findIndex((x) => x._id === id);
+    if (pos < 0) return throwError(() => new Error('Serviço não encontrado.'));
+    const erro = this.validar(item, id);
+    if (erro) return throwError(() => new Error(erro));
+    const novo = { ...this.dados[pos], ...item };
+    this.dados[pos] = novo;
+    return of({ ...novo }).pipe(delay(300));
+  }
+  remover(id: string): Observable<void> {
+    const item = this.dados.find((x) => x._id === id);
+    if (!item) return throwError(() => new Error('Serviço não encontrado.'));
+    item.ativo = false;
+    return of(undefined).pipe(delay(300));
+  }
+  private validar(x: ServicoEntrada, id?: string): string | null {
+    if (x.nome.trim().length < 3 || x.nome.length > 60)
+      return 'Nome deve ter entre 3 e 60 caracteres.';
+    if (
+      this.dados.some(
+        (d) => d._id !== id && d.nome.trim().toLowerCase() === x.nome.trim().toLowerCase(),
+      )
+    )
+      return 'Já existe um serviço com esse nome.';
+    if (x.preco < 0 || !Number.isFinite(x.preco)) return 'Preço inválido.';
+    if (!Number.isInteger(x.duracaoMinutos) || x.duracaoMinutos < 10 || x.duracaoMinutos > 480)
+      return 'Duração deve ter entre 10 e 480 minutos.';
+    return null;
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\servicos\services\servicos.service.ts ==========
+import { Observable } from 'rxjs';
+import { Servico, ServicoEntrada } from '../servico.model';
+export abstract class ServicosService {
+  abstract listar(): Observable<Servico[]>;
+  abstract listarTodos(): Observable<Servico[]>;
+  abstract buscarPorId(id: string): Observable<Servico>;
+  abstract criar(dados: ServicoEntrada): Observable<Servico>;
+  abstract atualizar(id: string, dados: ServicoEntrada): Observable<Servico>;
+  abstract remover(id: string): Observable<void>;
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\servicos\servico-form\servico-form.html ==========
+<h1>{{ id() ? 'Editar serviço' : 'Novo serviço' }}</h1>
+@if (erro()) {
+  <p role="alert" class="alerta erro">{{ erro() }}</p>
+}
+@if (carregando()) {
+  <p role="status">Carregando serviço...</p>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="salvar()" class="cartao formulario" novalidate>
+    <div class="campo">
+      <label for="nome-s">Nome *</label
+      ><input
+        id="nome-s"
+        formControlName="nome"
+        maxlength="60"
+        [class.invalido]="invalido('nome')"
+      />
+      @if (invalido('nome')) {
+        <small class="msg-erro">Nome entre 3 e 60 caracteres.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="cat-s">Categoria *</label
+      ><select id="cat-s" formControlName="categoria">
+        <option value="">Selecione</option>
+        @for (c of categorias; track c) {
+          <option [value]="c">{{ c }}</option>
+        }
+      </select>
+      @if (invalido('categoria')) {
+        <small class="msg-erro">Selecione a categoria.</small>
+      }
+    </div>
+    <div class="linha">
+      <div class="campo">
+        <label for="preco-s">Preço (R$) *</label
+        ><input id="preco-s" type="number" min="0" step="0.01" formControlName="preco" />
+        @if (invalido('preco')) {
+          <small class="msg-erro">Preço inválido.</small>
+        }
+      </div>
+      <div class="campo">
+        <label for="dur-s">Duração (min) *</label
+        ><input
+          id="dur-s"
+          type="number"
+          min="10"
+          max="480"
+          step="1"
+          formControlName="duracaoMinutos"
+        />
+        @if (invalido('duracaoMinutos')) {
+          <small class="msg-erro">De 10 a 480 minutos inteiros.</small>
+        }
+      </div>
+    </div>
+    <div class="acoes-form">
+      <a routerLink="/servicos" class="botao secundario">Cancelar</a
+      ><button type="submit" class="botao" [disabled]="form.invalid || salvando()">
+        {{ salvando() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </form>
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\servicos\servico-form\servico-form.ts ==========
+import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { CATEGORIAS_SERVICO, CategoriaServico } from '../servico.model';
+import { ServicosService } from '../services/servicos.service';
+@Component({
+  selector: 'app-servico-form',
+  imports: [ReactiveFormsModule, RouterLink],
+  templateUrl: './servico-form.html',
+})
+export class ServicoForm implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly api = inject(ServicosService);
+  private readonly router = inject(Router);
+  readonly id = input<string>();
+  protected readonly categorias = CATEGORIAS_SERVICO;
+  protected readonly carregando = signal(false);
+  protected readonly salvando = signal(false);
+  protected readonly erro = signal('');
+  protected readonly form = this.fb.nonNullable.group({
+    nome: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(60)]],
+    categoria: ['' as CategoriaServico | '', Validators.required],
+    preco: [0, [Validators.required, Validators.min(0)]],
+    duracaoMinutos: [
+      60,
+      [Validators.required, Validators.min(10), Validators.max(480), Validators.pattern(/^\d+$/)],
+    ],
+  });
+  ngOnInit(): void {
+    if (!this.id()) return;
+    this.carregando.set(true);
+    this.api.buscarPorId(this.id()!).subscribe({
+      next: (x) => {
+        this.form.patchValue(x);
+        this.carregando.set(false);
+      },
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.carregando.set(false);
+      },
+    });
+  }
+  protected invalido(k: keyof typeof this.form.controls): boolean {
+    const c = this.form.controls[k];
+    return c.invalid && (c.dirty || c.touched);
+  }
+  protected salvar(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.erro.set('');
+    this.salvando.set(true);
+    const dados = this.form.getRawValue() as {
+      nome: string;
+      categoria: CategoriaServico;
+      preco: number;
+      duracaoMinutos: number;
+    };
+    const req = this.id() ? this.api.atualizar(this.id()!, dados) : this.api.criar(dados);
+    req.subscribe({
+      next: () => void this.router.navigate(['/servicos']),
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.salvando.set(false);
+      },
+    });
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\servicos\servicos-lista\servicos-lista.html ==========
+<div class="cabecalho-pagina">
+  <h1>Serviços</h1>
+  <a class="botao" routerLink="novo">+ Novo serviço</a>
+</div>
+<div class="barra-filtros">
+  <label for="filtro-servico">Categoria</label
+  ><select id="filtro-servico" [value]="filtro()" (change)="filtrar($any($event.target).value)">
+    <option value="">Todas</option>
+    @for (c of categorias; track c) {
+      <option [value]="c">{{ c }}</option>
+    }
+  </select>
+</div>
+@if (sucesso()) {
+  <p role="status" class="alerta sucesso">{{ sucesso() }}</p>
+}
+@if (erro()) {
+  <p role="alert" class="alerta erro">
+    {{ erro() }} <button (click)="carregar()" type="button">Tentar novamente</button>
+  </p>
+}
+@if (carregando()) {
+  <p role="status">Carregando serviços...</p>
+} @else if (filtrados().length === 0) {
+  <p class="vazio">Nenhum serviço encontrado.</p>
+} @else {
+  <div class="tabela-container">
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Categoria</th>
+          <th>Preço</th>
+          <th>Duração</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of filtrados(); track s._id) {
+          <tr>
+            <td>{{ s.nome }}</td>
+            <td>{{ s.categoria }}</td>
+            <td>{{ s.preco | currency: 'BRL' }}</td>
+            <td>{{ s.duracaoMinutos }} min</td>
+            <td>
+              <div class="acoes">
+                <a class="botao secundario" [routerLink]="[s._id, 'editar']">Editar</a
+                ><button type="button" class="botao perigo" (click)="excluir(s)">Inativar</button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\servicos\servicos-lista\servicos-lista.ts ==========
+import { CurrencyPipe } from '@angular/common';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { ServicosService } from '../services/servicos.service';
+import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
+import { Servico, CATEGORIAS_SERVICO, CategoriaServico } from '../servico.model';
+@Component({
+  selector: 'app-servicos-lista',
+  imports: [RouterLink, CurrencyPipe],
+  templateUrl: './servicos-lista.html',
+})
+export class ServicosLista implements OnInit {
+  private readonly api = inject(ServicosService);
+  private readonly confirmacao = inject(ConfirmacaoService);
+  protected readonly categorias = CATEGORIAS_SERVICO;
+  protected readonly filtro = signal<CategoriaServico | ''>('');
+  protected readonly itens = signal<Servico[]>([]);
+  protected readonly filtrados = computed(() =>
+    this.itens().filter((x) => !this.filtro() || x.categoria === this.filtro()),
+  );
+  protected readonly carregando = signal(true);
+  protected readonly erro = signal('');
+  protected readonly sucesso = signal('');
+  ngOnInit(): void {
+    this.carregar();
+  }
+  protected carregar(): void {
+    this.carregando.set(true);
+    this.erro.set('');
+    this.api.listar().subscribe({
+      next: (x) => {
+        this.itens.set(x);
+        this.carregando.set(false);
+      },
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.carregando.set(false);
+      },
+    });
+  }
+  protected filtrar(c: string): void {
+    this.filtro.set(c as CategoriaServico | '');
+  }
+  protected async excluir(item: Servico): Promise<void> {
+    const aceitou = await this.confirmacao.confirmar({
+      titulo: 'Inativar serviço?',
+      descricao: `Tem certeza que deseja inativar "${item.nome}"? Ele deixará de aparecer entre os serviços ativos.`,
+      textoConfirmar: 'Sim, inativar',
+      tipo: 'perigo',
+    });
+    if (!aceitou) return;
+    this.erro.set('');
+    this.sucesso.set('');
+    this.api.remover(item._id).subscribe({
+      next: () => {
+        this.sucesso.set('Serviço inativado.');
+        this.carregar();
+      },
+      error: (e: Error) => this.erro.set(e.message),
+    });
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\servicos\servico.model.ts ==========
+export const CATEGORIAS_SERVICO = ['banho', 'tosa', 'veterinario', 'outros'] as const;
+export type CategoriaServico = (typeof CATEGORIAS_SERVICO)[number];
+export interface Servico {
+  _id: string;
+  nome: string;
+  categoria: CategoriaServico;
+  preco: number;
+  duracaoMinutos: number;
+  ativo: boolean;
+}
+export type ServicoEntrada = Omit<Servico, '_id' | 'ativo'>;
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\servicos\servicos.routes.ts ==========
+import { Routes } from '@angular/router';
+import { ServicosLista } from './servicos-lista/servicos-lista';
+import { ServicoForm } from './servico-form/servico-form';
+export const SERVICOS_ROUTES: Routes = [
+  { path: '', component: ServicosLista, title: 'Serviços' },
+  { path: 'novo', component: ServicoForm, title: 'Novo serviço' },
+  { path: ':id/editar', component: ServicoForm, title: 'Editar serviço' },
+];
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\tutores\services\tutores-mock.service.ts ==========
+
+import { Injectable } from '@angular/core';
+import { Observable, delay, of, throwError } from 'rxjs';
+import { Tutor, TutorEntrada } from '../tutor.model';
+import { TutoresService } from './tutores.service';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class TutoresMockService extends TutoresService {
+  private tutores: Tutor[] = [
+    {
+      _id: '1',
+      nome: 'João Silva',
+      telefone: '(51) 99999-1111',
+      email: 'joao@email.com',
+      endereco: 'Rua das Flores, 100',
+      ativo: true,
+    },
+    {
+      _id: '2',
+      nome: 'Maria Souza',
+      telefone: '(51) 99999-2222',
+      email: 'maria@email.com',
+      endereco: 'Rua Central, 200',
+      ativo: true,
+    },
+    {
+      _id: '3',
+      nome: 'Pedro Santos',
+      telefone: '(51) 99999-3333',
+      email: 'pedro@email.com',
+      ativo: true,
+    },
+  ];
+
+  private proximoId = 4;
+  private readonly atraso = 400;
+
+  listar(): Observable<Tutor[]> {
+    return of([...this.tutores]).pipe(delay(this.atraso));
+  }
+
+  buscarPorId(id: string): Observable<Tutor> {
+    const tutor = this.tutores.find((t) => t._id === id);
+
+    return tutor
+      ? of({ ...tutor }).pipe(delay(this.atraso))
+      : throwError(() => new Error(`Tutor ${id} não encontrado`));
+  }
+
+  criar(dados: TutorEntrada): Observable<Tutor> {
+    const emailExiste = this.tutores.some(
+      (t) => t.email.toLowerCase() === dados.email.toLowerCase(),
+    );
+
+    if (emailExiste) {
+      return throwError(() => new Error('Já existe um tutor com esse e-mail'));
+    }
+
+    const novo: Tutor = {
+      ...dados,
+      _id: String(this.proximoId++),
+      ativo: dados.ativo ?? true,
+    };
+
+    this.tutores.push(novo);
+
+    return of({ ...novo }).pipe(delay(this.atraso));
+  }
+
+  atualizar(
+    id: string,
+    dados: Partial<TutorEntrada>,
+  ): Observable<Tutor> {
+    const indice = this.tutores.findIndex((t) => t._id === id);
+
+    if (indice < 0) {
+      return throwError(() => new Error(`Tutor ${id} não encontrado`));
+    }
+
+    if (
+      dados.email &&
+      this.tutores.some(
+        (t) =>
+          t._id !== id &&
+          t.email.toLowerCase() === dados.email!.toLowerCase(),
+      )
+    ) {
+      return throwError(() => new Error('Já existe um tutor com esse e-mail'));
+    }
+
+    this.tutores[indice] = { ...this.tutores[indice], ...dados };
+
+    return of({ ...this.tutores[indice] }).pipe(delay(this.atraso));
+  }
+
+  remover(id: string): Observable<void> {
+    const existe = this.tutores.some((t) => t._id === id);
+
+    if (!existe) {
+      return throwError(() => new Error(`Tutor ${id} não encontrado`));
+    }
+
+    this.tutores = this.tutores.filter((t) => t._id !== id);
+
+    return of(undefined).pipe(delay(this.atraso));
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\tutores\services\tutores.routes.ts ==========
+import { Routes } from '@angular/router';
+import { TutoresLista } from '../tutores-lista/tutores-lista';
+import { TutoresFormulario } from '../tutores-formulario/tutores-formulario';
+
+export const TUTORES_ROUTES: Routes = [
+  {
+    path: '',
+    component: TutoresLista,
+    title: 'Tutores',
+  },
+  {
+    path: 'novo',
+    component: TutoresFormulario,
+    title: 'Novo tutor',
+  },
+  {
+    path: ':id/editar',
+    component: TutoresFormulario,
+    title: 'Editar tutor',
+  },
+];
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\tutores\services\tutores.service.ts ==========
+import { Observable } from 'rxjs';
+import { Tutor, TutorEntrada } from '../tutor.model';
+
+export abstract class TutoresService {
+  abstract listar(): Observable<Tutor[]>;
+  abstract buscarPorId(id: string): Observable<Tutor>;
+  abstract criar(dados: TutorEntrada): Observable<Tutor>;
+  abstract atualizar(
+    id: string,
+    dados: Partial<TutorEntrada>,
+  ): Observable<Tutor>;
+  abstract remover(id: string): Observable<void>;
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\tutores\tutor-card\tutor-card.html ==========
+<article class="cartao">
+  <div class="dados">
+    <h2>{{ tutor().nome }}</h2>
+
+    <p>
+      <strong>Telefone:</strong>
+      {{ tutor().telefone }}
+    </p>
+
+    <p>
+      <strong>E-mail:</strong>
+      {{ tutor().email }}
+    </p>
+
+    @if (tutor().endereco) {
+      <p>
+        <strong>Endereço:</strong>
+        {{ tutor().endereco }}
+      </p>
+    }
+  </div>
+
+  <div class="acoes">
+    <button type="button" (click)="selecionarTutor()">
+      Ver detalhes
+    </button>
+
+    <button type="button" (click)="editarTutor()">
+      Editar
+    </button>
+
+    <button type="button" (click)="excluirTutor()">
+      Excluir
+    </button>
+  </div>
+</article>
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\tutores\tutor-card\tutor-card.ts ==========
+import { Component, input, output } from '@angular/core';
+import { Tutor } from '../tutor.model';
+
+@Component({
+  selector: 'app-tutor-card',
+  standalone: true,
+  imports: [],
+  templateUrl: './tutor-card.html',
+  styleUrl: './tutor-card.css',
+})
+export class TutorCard {
+  tutor = input.required<Tutor>();
+
+  selecionar = output<Tutor>();
+  editar = output<Tutor>();
+  excluir = output<Tutor>();
+
+  protected selecionarTutor(): void {
+    this.selecionar.emit(this.tutor());
+  }
+
+  protected editarTutor(): void {
+    this.editar.emit(this.tutor());
+  }
+
+  protected excluirTutor(): void {
+    this.excluir.emit(this.tutor());
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\tutores\tutor-form\tutor-form.html ==========
+<h1>{{ id() ? 'Editar tutor' : 'Novo tutor' }}</h1>
+@if (erro()) {
+  <p class="alerta erro" role="alert">{{ erro() }}</p>
+}
+@if (carregando()) {
+  <p role="status">Carregando tutor...</p>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="salvar()" class="cartao formulario" novalidate>
+    <div class="campo">
+      <label for="nome-t">Nome *</label
+      ><input
+        id="nome-t"
+        formControlName="nome"
+        maxlength="80"
+        [class.invalido]="invalido('nome')"
+      />
+      @if (invalido('nome')) {
+        <small class="msg-erro">Entre 3 e 80 caracteres.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="telefone-t">Telefone *</label
+      ><input
+        id="telefone-t"
+        type="tel"
+        placeholder="(51) 99999-9999"
+        formControlName="telefone"
+        [class.invalido]="invalido('telefone')"
+      />
+      @if (invalido('telefone')) {
+        <small class="msg-erro">Use (51) 99999-9999.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="email-t">E-mail *</label
+      ><input
+        id="email-t"
+        type="email"
+        formControlName="email"
+        [class.invalido]="invalido('email')"
+      />
+      @if (invalido('email')) {
+        <small class="msg-erro">Informe um e-mail válido.</small>
+      }
+    </div>
+    <div class="campo">
+      <label for="endereco-t">Endereço</label
+      ><textarea id="endereco-t" rows="3" maxlength="150" formControlName="endereco"></textarea>
+      @if (invalido('endereco')) {
+        <small class="msg-erro">Máximo de 150 caracteres.</small>
+      }
+    </div>
+    <div class="acoes-form">
+      <a routerLink="/tutores" class="botao secundario">Cancelar</a
+      ><button class="botao" type="submit" [disabled]="form.invalid || salvando()">
+        {{ salvando() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </form>
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\tutores\tutor-form\tutor-form.ts ==========
+import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { TutoresService } from '../services/tutores.service';
+@Component({
+  selector: 'app-tutor-form',
+  imports: [ReactiveFormsModule, RouterLink],
+  templateUrl: './tutor-form.html',
+})
+export class TutorForm implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly api = inject(TutoresService);
+  private readonly router = inject(Router);
+  readonly id = input<string>();
+  protected readonly carregando = signal(false);
+  protected readonly salvando = signal(false);
+  protected readonly erro = signal('');
+  protected readonly form = this.fb.nonNullable.group({
+    nome: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(80)]],
+    telefone: ['', [Validators.required, Validators.pattern(/^\(\d{2}\) \d{5}-\d{4}$/)]],
+    email: ['', [Validators.required, Validators.email]],
+    endereco: ['', Validators.maxLength(150)],
+  });
+  ngOnInit(): void {
+    if (!this.id()) return;
+    this.carregando.set(true);
+    this.api.buscarPorId(this.id()!).subscribe({
+      next: (x) => {
+        this.form.patchValue(x);
+        this.carregando.set(false);
+      },
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.carregando.set(false);
+      },
+    });
+  }
+  protected invalido(k: keyof typeof this.form.controls): boolean {
+    const c = this.form.controls[k];
+    return c.invalid && (c.dirty || c.touched);
+  }
+  protected salvar(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.erro.set('');
+    this.salvando.set(true);
+    const dados = this.form.getRawValue();
+    const req = this.id() ? this.api.atualizar(this.id()!, dados) : this.api.criar(dados);
+    req.subscribe({
+      next: () => void this.router.navigate(['/tutores']),
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.salvando.set(false);
+      },
+    });
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\tutores\tutores-formulario\tutores-formulario.html ==========
+<section class="pagina">
+  <header class="cabecalho">
+    <div>
+      <h1>{{ idTutor ? 'Editar tutor' : 'Novo tutor' }}</h1>
+      <p>
+        {{
+          idTutor
+            ? 'Atualize os dados do tutor.'
+            : 'Preencha os dados para cadastrar um tutor.'
+        }}
+      </p>
+    </div>
+  </header>
+
+  @if (carregando()) {
+    <p role="status">Carregando dados do tutor...</p>
+  } @else {
+    <form [formGroup]="formulario" (ngSubmit)="salvar()" novalidate>
+      <div class="campo">
+        <label for="nome">Nome completo *</label>
+        <input
+          id="nome"
+          type="text"
+          formControlName="nome"
+          placeholder="Digite o nome completo"
+          autocomplete="name"
+        />
+
+        @if (
+          formulario.controls.nome.touched &&
+          formulario.controls.nome.hasError('required')
+        ) {
+          <p class="erro" role="alert">O nome é obrigatório.</p>
+        } @else if (
+          formulario.controls.nome.touched &&
+          formulario.controls.nome.hasError('minlength')
+        ) {
+          <p class="erro" role="alert">
+            O nome deve ter pelo menos 3 caracteres.
+          </p>
+        } @else if (
+          formulario.controls.nome.touched &&
+          formulario.controls.nome.hasError('maxlength')
+        ) {
+          <p class="erro" role="alert">
+            O nome deve ter no máximo 80 caracteres.
+          </p>
+        }
+      </div>
+
+      <div class="campo">
+        <label for="telefone">Telefone *</label>
+        <input
+          id="telefone"
+          type="tel"
+          formControlName="telefone"
+          placeholder="(51) 99999-9999"
+          autocomplete="tel"
+        />
+
+        @if (
+          formulario.controls.telefone.touched &&
+          formulario.controls.telefone.hasError('required')
+        ) {
+          <p class="erro" role="alert">O telefone é obrigatório.</p>
+        } @else if (
+          formulario.controls.telefone.touched &&
+          formulario.controls.telefone.hasError('pattern')
+        ) {
+          <p class="erro" role="alert">
+            Use o formato (51) 99999-9999.
+          </p>
+        }
+      </div>
+
+      <div class="campo">
+        <label for="email">E-mail *</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="exemplo@email.com"
+          autocomplete="email"
+        />
+
+        @if (
+          formulario.controls.email.touched &&
+          formulario.controls.email.hasError('required')
+        ) {
+          <p class="erro" role="alert">O e-mail é obrigatório.</p>
+        } @else if (
+          formulario.controls.email.touched &&
+          formulario.controls.email.hasError('email')
+        ) {
+          <p class="erro" role="alert">Digite um e-mail válido.</p>
+        }
+      </div>
+
+      <div class="campo">
+        <label for="endereco">Endereço</label>
+        <textarea
+          id="endereco"
+          formControlName="endereco"
+          rows="3"
+          maxlength="150"
+          placeholder="Rua das Flores, 120 - Centro"
+          autocomplete="street-address"
+        ></textarea>
+
+        @if (
+          formulario.controls.endereco.touched &&
+          formulario.controls.endereco.hasError('maxlength')
+        ) {
+          <p class="erro" role="alert">
+            O endereço deve ter no máximo 150 caracteres.
+          </p>
+        }
+      </div>
+
+      @if (erro()) {
+        <p class="erro" role="alert">{{ erro() }}</p>
+      }
+
+      <div class="acoes">
+        <a routerLink="/tutores" class="botao-secundario">
+          Cancelar
+        </a>
+
+<button
+  type="submit"
+  [disabled]="formulario.invalid || salvando()"
+>
+          {{
+            salvando()
+              ? 'Salvando...'
+              : idTutor
+                ? 'Salvar alterações'
+                : 'Salvar tutor'
+          }}
+        </button>
+      </div>
+    </form>
+  }
+</section>
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\tutores\tutores-formulario\tutores-formulario.ts ==========
+import { Component, OnInit, signal } from '@angular/core';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TutorEntrada } from '../tutor.model';
+import { TutoresService } from '../services/tutores.service';
+
+@Component({
+  selector: 'app-tutores-formulario',
+  standalone: true,
+  imports: [ReactiveFormsModule, RouterLink],
+  templateUrl: './tutores-formulario.html',
+  styleUrl: './tutores-formulario.css',
+})
+export class TutoresFormulario implements OnInit {
+  formulario = new FormGroup({
+    nome: new FormControl('', {
+      nonNullable: true,
+      validators: [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(80),
+      ],
+    }),
+    telefone: new FormControl('', {
+      nonNullable: true,
+      validators: [
+        Validators.required,
+        Validators.pattern(/^\(\d{2}\) \d{4,5}-\d{4}$/),
+      ],
+    }),
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email],
+    }),
+    endereco: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(150)],
+    }),
+  });
+
+  idTutor: string | null = null;
+  carregando = signal(false);
+  salvando = signal(false);
+  erro = signal('');
+
+  constructor(
+    private tutoresService: TutoresService,
+    private router: Router,
+    private route: ActivatedRoute,
+  ) {}
+
+  ngOnInit(): void {
+    this.idTutor = this.route.snapshot.paramMap.get('id');
+
+    if (this.idTutor) {
+      this.carregarTutor(this.idTutor);
+    }
+  }
+
+  carregarTutor(id: string): void {
+    this.carregando.set(true);
+    this.erro.set('');
+
+    this.tutoresService.buscarPorId(id).subscribe({
+      next: (tutor) => {
+        this.formulario.patchValue({
+          nome: tutor.nome,
+          telefone: tutor.telefone,
+          email: tutor.email,
+          endereco: tutor.endereco ?? '',
+        });
+
+        this.carregando.set(false);
+      },
+      error: () => {
+        this.erro.set('Não foi possível carregar os dados do tutor.');
+        this.carregando.set(false);
+      },
+    });
+  }
+
+  salvar(): void {
+    this.erro.set('');
+
+    if (this.formulario.invalid) {
+      this.formulario.markAllAsTouched();
+      return;
+    }
+
+    const valor = this.formulario.getRawValue();
+
+    const dados: TutorEntrada = {
+      nome: valor.nome.trim(),
+      telefone: valor.telefone.trim(),
+      email: valor.email.trim(),
+      endereco: valor.endereco.trim() || undefined,
+    };
+
+    this.salvando.set(true);
+
+    const operacao = this.idTutor
+      ? this.tutoresService.atualizar(this.idTutor, dados)
+      : this.tutoresService.criar(dados);
+
+    operacao.subscribe({
+      next: () => {
+        this.salvando.set(false);
+        this.router.navigate(['/tutores']);
+      },
+      error: (falha: unknown) => {
+        this.salvando.set(false);
+
+        const mensagem = falha instanceof Error ? falha.message : '';
+
+        this.erro.set(mensagem || 'Não foi possível salvar o tutor.');
+      },
+    });
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\tutores\tutores-lista\tutores-lista.html ==========
+<section class="pagina">
+  <header class="cabecalho">
+    <div>
+      <h1>Tutores</h1>
+      <p>Gerencie os tutores cadastrados no Pet Shop.</p>
+    </div>
+
+    <a class="botao" routerLink="/tutores/novo">
+      Novo tutor
+    </a>
+  </header>
+
+  <div class="filtro">
+    <label for="busca">Pesquisar tutor por nome</label>
+    <input
+      id="busca"
+      type="search"
+      [(ngModel)]="termoBusca"
+      placeholder="Digite o nome do tutor..."
+    />
+  </div>
+
+  @if (carregando()) {
+    <p role="status">Carregando tutores...</p>
+  } @else if (erro()) {
+    <p role="alert">{{ erro() }}</p>
+
+    <button type="button" (click)="carregarTutores()">
+      Tentar novamente
+    </button>
+  } @else {
+    @if (sucesso()) {
+      <p role="status">{{ sucesso() }}</p>
+    }
+
+    @if (tutoresFiltrados.length === 0) {
+      <p>Nenhum tutor encontrado.</p>
+    } @else {
+      <div class="lista-tutores">
+        @for (tutor of tutoresFiltrados; track tutor._id) {
+          <app-tutor-card
+            [tutor]="tutor"
+            (selecionar)="selecionarTutor($event)"
+            (editar)="editarTutor($event)"
+            (excluir)="excluirTutor($event)"
+          />
+        }
+      </div>
+    }
+  }
+
+  @if (tutorSelecionado) {
+    <section class="detalhes" aria-live="polite">
+      <h2>Tutor selecionado</h2>
+
+      <p><strong>Nome:</strong> {{ tutorSelecionado.nome }}</p>
+      <p><strong>Telefone:</strong> {{ tutorSelecionado.telefone }}</p>
+      <p><strong>E-mail:</strong> {{ tutorSelecionado.email }}</p>
+
+      @if (tutorSelecionado.endereco) {
+        <p><strong>Endereço:</strong> {{ tutorSelecionado.endereco }}</p>
+      }
+
+      <button type="button" (click)="limparSelecao()">
+        Fechar detalhes
+      </button>
+    </section>
+  }
+</section>
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\tutores\tutores-lista\tutores-lista.ts ==========
+import { Component, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+
+import { Tutor } from '../tutor.model';
+import { TutoresService } from '../services/tutores.service';
+import { TutorCard } from '../tutor-card/tutor-card';
+
+@Component({
+  selector: 'app-tutores-lista',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterLink, TutorCard],
+  templateUrl: './tutores-lista.html',
+  styleUrl: './tutores-lista.css',
+})
+export class TutoresLista implements OnInit {
+  tutores: Tutor[] = [];
+  termoBusca = '';
+
+  carregando = signal(false);
+  erro = signal('');
+  sucesso = signal('');
+
+  tutorSelecionado: Tutor | null = null;
+
+  constructor(
+    private tutoresService: TutoresService,
+    private router: Router,
+  ) {}
+
+  ngOnInit(): void {
+    this.carregarTutores();
+  }
+
+  carregarTutores(): void {
+    this.carregando.set(true);
+    this.erro.set('');
+    this.sucesso.set('');
+
+    this.tutoresService.listar().subscribe({
+      next: (dados) => {
+        this.tutores = dados;
+        this.carregando.set(false);
+        this.sucesso.set('Lista de tutores carregada com sucesso.');
+      },
+      error: () => {
+        this.erro.set('Não foi possível carregar os tutores.');
+        this.carregando.set(false);
+      },
+    });
+  }
+
+  get tutoresFiltrados(): Tutor[] {
+    const termo = this.termoBusca.trim().toLocaleLowerCase();
+
+    return this.tutores.filter((tutor) =>
+      tutor.nome.toLocaleLowerCase().includes(termo),
+    );
+  }
+
+  selecionarTutor(tutor: Tutor): void {
+    this.tutorSelecionado = tutor;
+  }
+
+  limparSelecao(): void {
+    this.tutorSelecionado = null;
+  }
+
+  editarTutor(tutor: Tutor): void {
+    this.router.navigate(['/tutores', tutor._id, 'editar']);
+  }
+
+  excluirTutor(tutor: Tutor): void {
+    const confirmar = window.confirm(
+      `Tem certeza que deseja excluir o tutor ${tutor.nome}?`,
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.erro.set('');
+    this.sucesso.set('');
+
+    this.tutoresService.remover(tutor._id).subscribe({
+      next: () => {
+        this.tutores = this.tutores.filter(
+          (item) => item._id !== tutor._id,
+        );
+
+        if (this.tutorSelecionado?._id === tutor._id) {
+          this.tutorSelecionado = null;
+        }
+
+        this.sucesso.set('Tutor excluído com sucesso.');
+      },
+      error: () => {
+        this.erro.set('Não foi possível excluir o tutor.');
+      },
+    });
+  }
+}
+
+========== C:\Users\Aluno\Downloads\grupo-4-PetShop\frontend\src\app\features\tutores\tutor.model.ts ==========
+export interface Tutor {
+  _id: string;
+  nome: string;
+  telefone: string;
+  email: string;
+  endereco?: string;
+  ativo: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type TutorEntrada = Omit<
+  Tutor,
+  '_id' | 'ativo' | 'createdAt' | 'updatedAt'
+> & {
+  ativo?: boolean;
+};

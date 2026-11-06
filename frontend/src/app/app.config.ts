@@ -16,6 +16,7 @@ import { ProdutosApiService } from './features/produtos/services/produtos-api.se
 import { ProdutosMockService } from './features/produtos/services/produtos-mock.service';
 import { ProdutosService } from './features/produtos/services/produtos.service';
 
+import { TutoresApiService } from './features/tutores/services/tutores-api.service';
 import { TutoresMockService } from './features/tutores/services/tutores-mock.service';
 import { TutoresService } from './features/tutores/services/tutores.service';
 
@@ -23,6 +24,7 @@ import { PetsMockService } from './features/pets/services/pets-mock.service';
 import { PetsService } from './features/pets/services/pets.service';
 
 import { AtendimentosService } from './features/atendimentos/services/atendimentos.service';
+import { AtendimentosApiService } from './features/atendimentos/services/atendimentos-api.service';
 import { AtendimentosMockService } from './features/atendimentos/services/atendimentos-mock.service';
 import { ServicosService } from './features/servicos/services/servicos.service';
 import { ServicosMockService } from './features/servicos/services/servicos-mock.service';
@@ -46,9 +48,11 @@ export const appConfig: ApplicationConfig = {
     },
 
     {
-      provide: TutoresService,
-      useClass: TutoresMockService,
-    },
+  provide: TutoresService,
+  useClass: environment.usarMock
+    ? TutoresMockService
+    : TutoresApiService,
+},
 
     {
       provide: PetsService,
@@ -56,7 +60,12 @@ export const appConfig: ApplicationConfig = {
     },
 
     // Módulos de demonstração ainda sem API NestJS correspondente.
-    { provide: AtendimentosService, useClass: AtendimentosMockService },
+   {
+  provide: AtendimentosService,
+  useClass: environment.usarMock
+    ? AtendimentosMockService
+    : AtendimentosApiService,
+},
     { provide: ServicosService, useClass: ServicosMockService },
     { provide: ProfissionaisService, useClass: ProfissionaisMockService },
   ],
