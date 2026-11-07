@@ -28,6 +28,7 @@ import { AtendimentosMockService } from './features/atendimentos/services/atendi
 
 import { ServicosService } from './features/servicos/services/servicos.service';
 import { ServicosMockService } from './features/servicos/services/servicos-mock.service';
+import { ServicosApiService } from './features/servicos/services/servicos-api.service';
 
 import { ProfissionaisService } from './features/profissionais/services/profissionais.service';
 import { ProfissionaisMockService } from './features/profissionais/services/profissionais-mock.service';
@@ -59,7 +60,10 @@ export const appConfig: ApplicationConfig = {
         ? AtendimentosMockService
         : AtendimentosApiService,
     },
-    { provide: ServicosService, useClass: ServicosMockService },
+    {
+      provide: ServicosService,
+      useClass: environment.usarMock ? ServicosMockService : ServicosApiService,
+    },
     { provide: ProfissionaisService, useClass: ProfissionaisMockService },
   ],
 };
