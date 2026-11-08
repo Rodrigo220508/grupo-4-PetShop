@@ -1,19 +1,21 @@
+
 <a class="pular-conteudo" href="#conteudo-principal">
   Pular para o conteúdo principal
 </a>
 
 <header class="topo">
+
   <a class="marca" routerLink="/" aria-label="PetShop, voltar ao início">
-    <span aria-hidden="true">🐾</span> {{ nomeSistema }}
+    PetShop
   </a>
 
-  <span class="versao">Checkpoint C1 · modo demonstrativo</span>
-
   <div class="acesso-topo">
+
     @if (auth.estaLogado()) {
       <span class="usuario-atual">
         Olá, <strong>{{ auth.usuario()?.nome }}</strong>
       </span>
+
       <button type="button" class="botao-sair" (click)="auth.sair()">
         Sair
       </button>
@@ -21,15 +23,20 @@
       <a class="botao-entrar" routerLink="/login" routerLinkActive="ativo">
         Entrar
       </a>
+
       <a class="botao-cadastro" routerLink="/cadastro" routerLinkActive="ativo">
         Criar conta
       </a>
     }
+
   </div>
+
 </header>
 
 <div class="corpo">
+
   <nav class="menu" aria-label="Menu principal">
+
     <a
       routerLink="/"
       routerLinkActive="ativo"
@@ -38,19 +45,20 @@
       Início
     </a>
 
-    <a routerLink="/produtos" routerLinkActive="ativo">Produtos</a>
+    <a routerLink="/atendimentos" routerLinkActive="ativo">Atendimentos</a>
     <a routerLink="/pets" routerLinkActive="ativo">Pets</a>
     <a routerLink="/tutores" routerLinkActive="ativo">Tutores</a>
-    <a routerLink="/atendimentos" routerLinkActive="ativo">Atendimentos</a>
+    <a routerLink="/produtos" routerLinkActive="ativo">Produtos</a>
     <a routerLink="/servicos" routerLinkActive="ativo">Serviços</a>
     <a routerLink="/profissionais" routerLinkActive="ativo">Profissionais</a>
-    <a routerLink="/relatorios" routerLinkActive="ativo">Relatórios 🔒</a>
+    <a routerLink="/relatorios" routerLinkActive="ativo">Relatórios </a>
+
   </nav>
 
   <main id="conteudo-principal" class="conteudo" tabindex="-1">
     <router-outlet />
   </main>
+
 </div>
 
-<!-- Um único modal para exclusões e mudanças de status em todo o site. -->
 <app-dialogo-confirmacao />

@@ -1,3 +1,4 @@
+
 import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -9,10 +10,12 @@ import { ServicosService } from '../../servicos/services/servicos.service';
 import { ProfissionaisService } from '../../profissionais/services/profissionais.service';
 import { Atendimento, STATUS, Status, TRANSICOES } from '../atendimento.model';
 import { AtendimentosService } from '../services/atendimentos.service';
+
 @Component({
   selector: 'app-atendimentos-lista',
   imports: [DatePipe, RouterLink],
-  templateUrl: './atendimentos-lista.html',
+ templateUrl: './atendimentos-lista.html',
+  styleUrl: './atendimento-lista.css',
 })
 export class AtendimentosLista implements OnInit {
   private readonly api = inject(AtendimentosService);
@@ -20,6 +23,7 @@ export class AtendimentosLista implements OnInit {
   private readonly petsService = inject(PetsService);
   private readonly servicosService = inject(ServicosService);
   private readonly profissionaisService = inject(ProfissionaisService);
+
   protected readonly estados = STATUS;
   protected readonly transicoes = TRANSICOES;
   protected readonly itens = signal<Atendimento[]>([]);
@@ -31,6 +35,7 @@ export class AtendimentosLista implements OnInit {
   protected readonly nomesPets = signal<Record<string, string>>({});
   protected readonly nomesServicos = signal<Record<string, string>>({});
   protected readonly nomesProfissionais = signal<Record<string, string>>({});
+
   ngOnInit(): void {
     forkJoin({
       pets: this.petsService.listar(),
@@ -40,32 +45,47 @@ export class AtendimentosLista implements OnInit {
       next: ({ pets, servicos, profissionais }) => {
         this.nomesPets.set(Object.fromEntries(pets.map((x) => [x._id, x.nome])));
         this.nomesServicos.set(Object.fromEntries(servicos.map((x) => [x._id, x.nome])));
-        this.nomesProfissionais.set(Object.fromEntries(profissionais.map((x) => [x._id, x.nome])));
+        this.nomesProfissionais.set(
+          Object.fromEntries(profissionais.map((x) => [x._id, x.nome])),
+        );
       },
-      error: () => this.erro.set('Não foi possível carregar alguns nomes de referência.'),
+      error: () =>
+        this.erro.set('Não foi possível carregar alguns nomes de referência.'),
     });
+
     this.carregar();
   }
-  protected nome(ref: Referencia, tipo: 'pet' | 'servico' | 'profissional'): string {
+
+  protected nome(
+    ref: Referencia,
+    tipo: 'pet' | 'servico' | 'profissional',
+  ): string {
     const id = idDe(ref);
+
     const mapa =
       tipo === 'pet'
         ? this.nomesPets()
         : tipo === 'servico'
           ? this.nomesServicos()
           : this.nomesProfissionais();
+
     return (
       mapa[id] ??
-      (typeof ref === 'object' && typeof ref['nome'] === 'string' ? String(ref['nome']) : id)
+      (typeof ref === 'object' && typeof ref['nome'] === 'string'
+        ? String(ref['nome'])
+        : id)
     );
   }
+
   protected filtrar(valor: string): void {
     this.status.set(valor as Status | '');
     this.carregar();
   }
+
   protected carregar(): void {
     this.carregando.set(true);
     this.erro.set('');
+
     this.api.listar(this.status() || undefined).subscribe({
       next: (xs) => {
         this.itens.set(xs);
@@ -77,22 +97,41 @@ export class AtendimentosLista implements OnInit {
       },
     });
   }
-  protected async avancar(a: Atendimento, destino: Status): Promise<void> {
+
+  protected async avancar(
+    a: Atendimento,
+    destino: Status,
+  ): Promise<void> {
     if (this.operando()) return;
+
     const cancelamento = destino === 'cancelado';
-    const verbo = destino === 'em_atendimento' ? 'Iniciar' : destino === 'concluido' ? 'Concluir' : 'Cancelar';
+
+    const verbo =
+      destino === 'em_atendimento'
+        ? 'Iniciar'
+        : destino === 'concluido'
+          ? 'Concluir'
+          : 'Cancelar';
+
     const aceitou = await this.confirmacao.confirmar({
-      titulo: cancelamento ? 'Cancelar atendimento?' : `${verbo} atendimento?`,
+      titulo: cancelamento
+        ? 'Cancelar atendimento?'
+        : `${verbo} atendimento?`,
       descricao: cancelamento
         ? `Tem certeza que deseja cancelar o atendimento de ${this.nome(a.pet, 'pet')}?`
         : `Confirma a mudança de status do atendimento de ${this.nome(a.pet, 'pet')} para "${destino.replace('_', ' ')}"?`,
-      textoConfirmar: cancelamento ? 'Sim, cancelar' : `Sim, ${verbo.toLowerCase()}`,
+      textoConfirmar: cancelamento
+        ? 'Sim, cancelar'
+        : `Sim, ${verbo.toLowerCase()}`,
       tipo: cancelamento ? 'perigo' : 'padrao',
     });
+
     if (!aceitou) return;
+
     this.operando.set(true);
     this.erro.set('');
     this.sucesso.set('');
+
     this.api.mudarStatus(a._id, destino).subscribe({
       next: () => {
         this.operando.set(false);

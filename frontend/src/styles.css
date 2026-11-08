@@ -21,7 +21,7 @@ body {
 }
 h1 {
   font-family: Cambria, Georgia, serif;
-  color: var(--cor-primaria);
+  color: #214f39;
   margin: 0 0 16px;
 }
 a {

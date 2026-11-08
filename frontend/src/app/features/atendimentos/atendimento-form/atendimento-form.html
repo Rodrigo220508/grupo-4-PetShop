@@ -1,77 +1,111 @@
-<div class="cabecalho-pagina">
-  <h1>{{ id() ? 'Editar atendimento' : 'Agendar atendimento' }}</h1>
+
+<div class="pagina-formulario">
+
+  <div class="cabecalho-pagina">
+    <div>
+      <span class="subtitulo">GERENCIAMENTO DE AGENDA</span>
+      <h1>{{ id() ? 'Editar atendimento' : 'Agendar atendimento' }}</h1>
+      <p>Preencha as informações para registrar um atendimento.</p>
+    </div>
+  </div>
+
+  @if (erro()) {
+    <p class="alerta erro" role="alert">{{ erro() }}</p>
+  }
+
+  @if (carregando()) {
+    <p role="status" class="carregando">Carregando formulário...</p>
+  } @else {
+
+    <form class="cartao formulario" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+
+      <div class="cabecalho-formulario">
+        <h2>Informações do atendimento</h2>
+        <p>Os campos marcados com * são obrigatórios.</p>
+      </div>
+
+      <div class="campos-grid">
+
+        <div class="campo">
+          <label for="pet">Pet <span>*</span></label>
+          <select id="pet" formControlName="pet" [class.invalido]="invalido('pet')">
+            <option value="">Selecione um pet</option>
+            @for (p of pets(); track p._id) {
+              <option [value]="p._id">{{ p.nome }}</option>
+            }
+          </select>
+          @if (invalido('pet')) {
+            <small class="msg-erro">Selecione um pet.</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="servico">Serviço <span>*</span></label>
+          <select id="servico" formControlName="servico" [class.invalido]="invalido('servico')">
+            <option value="">Selecione um serviço</option>
+            @for (s of servicos(); track s._id) {
+              <option [value]="s._id">{{ s.nome }}</option>
+            }
+          </select>
+          @if (invalido('servico')) {
+            <small class="msg-erro">Selecione um serviço.</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="profissional">Profissional <span>*</span></label>
+          <select
+            id="profissional"
+            formControlName="profissional"
+            [class.invalido]="invalido('profissional')"
+          >
+            <option value="">Selecione um profissional</option>
+            @for (p of profissionais(); track p._id) {
+              <option [value]="p._id">{{ p.nome }}</option>
+            }
+          </select>
+          @if (invalido('profissional')) {
+            <small class="msg-erro">Selecione um profissional.</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="dataHora">Data e hora <span>*</span></label>
+          <input
+            type="datetime-local"
+            id="dataHora"
+            formControlName="dataHora"
+            [class.invalido]="invalido('dataHora')"
+          />
+          @if (invalido('dataHora')) {
+            <small class="msg-erro">Informe uma data e hora futuras.</small>
+          }
+        </div>
+
+        <div class="campo campo-completo">
+          <label for="observacoes">Observações</label>
+          <textarea
+            id="observacoes"
+            formControlName="observacoes"
+            maxlength="300"
+            rows="4"
+            placeholder="Adicione alguma informação importante sobre o atendimento..."
+          ></textarea>
+          <div class="limite-texto">Máximo de 300 caracteres.</div>
+          @if (invalido('observacoes')) {
+            <small class="msg-erro">Máximo de 300 caracteres.</small>
+          }
+        </div>
+
+      </div>
+
+      <div class="acoes-form">
+        <a routerLink="/atendimentos" class="botao secundario">Cancelar</a>
+        <button type="submit" class="botao" [disabled]="form.invalid || salvando()">
+          {{ salvando() ? 'Salvando...' : 'Salvar atendimento' }}
+        </button>
+      </div>
+
+    </form>
+  }
 </div>
-@if (erro()) {
-  <p class="alerta erro" role="alert">{{ erro() }}</p>
-}
-@if (carregando()) {
-  <p role="status">Carregando formulário...</p>
-} @else {
-  <form class="cartao formulario" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
-    <div class="campo">
-      <label for="pet">Pet *</label
-      ><select id="pet" formControlName="pet" [class.invalido]="invalido('pet')">
-        <option value="">Selecione um pet</option>
-        @for (p of pets(); track p._id) {
-          <option [value]="p._id">{{ p.nome }}</option>
-        }
-      </select>
-      @if (invalido('pet')) {
-        <small class="msg-erro">Selecione um pet.</small>
-      }
-    </div>
-    <div class="campo">
-      <label for="servico">Serviço *</label
-      ><select id="servico" formControlName="servico" [class.invalido]="invalido('servico')">
-        <option value="">Selecione um serviço</option>
-        @for (s of servicos(); track s._id) {
-          <option [value]="s._id">{{ s.nome }}</option>
-        }
-      </select>
-      @if (invalido('servico')) {
-        <small class="msg-erro">Selecione um serviço.</small>
-      }
-    </div>
-    <div class="campo">
-      <label for="profissional">Profissional *</label
-      ><select
-        id="profissional"
-        formControlName="profissional"
-        [class.invalido]="invalido('profissional')"
-      >
-        <option value="">Selecione um profissional</option>
-        @for (p of profissionais(); track p._id) {
-          <option [value]="p._id">{{ p.nome }}</option>
-        }
-      </select>
-      @if (invalido('profissional')) {
-        <small class="msg-erro">Selecione um profissional.</small>
-      }
-    </div>
-    <div class="campo">
-      <label for="dataHora">Data e hora *</label
-      ><input
-        type="datetime-local"
-        id="dataHora"
-        formControlName="dataHora"
-        [class.invalido]="invalido('dataHora')"
-      />
-      @if (invalido('dataHora')) {
-        <small class="msg-erro">Informe a data e a hora.</small>
-      }
-    </div>
-    <div class="campo">
-      <label for="observacoes">Observações</label
-      ><textarea id="observacoes" formControlName="observacoes" maxlength="300" rows="3"></textarea>
-      @if (invalido('observacoes')) {
-        <small class="msg-erro">Máximo de 300 caracteres.</small>
-      }
-    </div>
-    <div class="acoes-form">
-      <a routerLink="/atendimentos" class="botao secundario">Cancelar</a
-      ><button type="submit" class="botao" [disabled]="form.invalid || salvando()">
-        {{ salvando() ? 'Salvando...' : 'Salvar atendimento' }}
-      </button>
-    </div>
-  </form>
-}
