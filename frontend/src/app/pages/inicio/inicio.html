@@ -1,95 +1,132 @@
 
 <main class="inicio">
 
+  <!-- BANNER PRINCIPAL -->
   <section class="boas-vindas">
-    <div class="texto-boas-vindas">
-      <span class="etiqueta">GESTÃO PETSHOP</span>
 
-      <h1>Cuidando de quem faz parte da família.</h1>
+    <div class="conteudo-banner">
+      <span class="etiqueta">BEM-VINDO AO PETCARE</span>
+
+      <h1>
+        Cuidado e amor
+        <br>
+        para o <span>seu pet!</span>
+      </h1>
 
       <p>
-        Gerencie cadastros, organize atendimentos e acompanhe
-        tudo o que acontece no seu PetShop em um só lugar.
+        Tudo o que seu PetShop precisa em um só lugar:
+        atendimentos, serviços e muito carinho.
       </p>
 
       <a routerLink="/atendimentos" class="botao-principal">
-        Acessar agenda →
+        Explorar o sistema <span>→</span>
       </a>
     </div>
 
-    <div class="ilustracao" aria-hidden="true">🐾</div>
+    <div class="imagem-fundo">
+      <img src="/pets-banner.png.jpg" alt="Cachorro e gato juntos">
+    </div>
+
   </section>
 
+  <!-- MÓDULOS DO SISTEMA -->
   <section class="secao-modulos">
-    <div class="titulo-secao">
-      <span class="etiqueta">ACESSO RÁPIDO</span>
-      <h2>Explore o sistema</h2>
-      <p>Escolha uma área para começar.</p>
+
+    <div class="cabecalho-modulos">
+      <div>
+        <span class="etiqueta">ACESSO RÁPIDO</span>
+        <h2>O que você deseja acessar?</h2>
+        <p>Escolha uma área para continuar.</p>
+      </div>
     </div>
 
     <div class="atalhos">
 
       <a class="cartao" routerLink="/atendimentos">
-        <span class="icone">📅</span>
-        <h3>Atendimentos</h3>
-        <p>Organize agendamentos e acompanhe os serviços.</p>
-        <span class="acessar">Acessar módulo →</span>
+        <div class="icone">▦</div>
+        <div class="texto-cartao">
+          <h3>Atendimentos</h3>
+          <p>Organize agendamentos e serviços.</p>
+        </div>
+        <span class="seta">→</span>
       </a>
 
       <a class="cartao" routerLink="/pets">
-        <span class="icone">🐶</span>
-        <h3>Pets</h3>
-        <p>Consulte e gerencie os animais cadastrados.</p>
-        <span class="acessar">Acessar módulo →</span>
+        <div class="icone">♡</div>
+        <div class="texto-cartao">
+          <h3>Pets</h3>
+          <p>Consulte os animais cadastrados.</p>
+        </div>
+        <span class="seta">→</span>
       </a>
 
       <a class="cartao" routerLink="/tutores">
-        <span class="icone">👤</span>
-        <h3>Tutores</h3>
-        <p>Gerencie os responsáveis pelos animais.</p>
-        <span class="acessar">Acessar módulo →</span>
+        <div class="icone">♧</div>
+        <div class="texto-cartao">
+          <h3>Tutores</h3>
+          <p>Gerencie os responsáveis pelos pets.</p>
+        </div>
+        <span class="seta">→</span>
       </a>
 
       <a class="cartao" routerLink="/produtos">
-        <span class="icone">🛍️</span>
-        <h3>Produtos</h3>
-        <p>Consulte e organize os produtos disponíveis.</p>
-        <span class="acessar">Acessar módulo →</span>
+        <div class="icone">▤</div>
+        <div class="texto-cartao">
+          <h3>Produtos</h3>
+          <p>Organize os produtos disponíveis.</p>
+        </div>
+        <span class="seta">→</span>
       </a>
 
       <a class="cartao" routerLink="/servicos">
-        <span class="icone">✂️</span>
-        <h3>Serviços</h3>
-        <p>Gerencie os serviços oferecidos.</p>
-        <span class="acessar">Acessar módulo →</span>
+        <div class="icone">✂</div>
+        <div class="texto-cartao">
+          <h3>Serviços</h3>
+          <p>Gerencie os serviços oferecidos.</p>
+        </div>
+        <span class="seta">→</span>
       </a>
 
       <a class="cartao" routerLink="/profissionais">
-        <span class="icone">🩺</span>
-        <h3>Profissionais</h3>
-        <p>Consulte os profissionais da equipe.</p>
-        <span class="acessar">Acessar módulo →</span>
+        <div class="icone">✚</div>
+        <div class="texto-cartao">
+          <h3>Profissionais</h3>
+          <p>Consulte os profissionais da equipe.</p>
+        </div>
+        <span class="seta">→</span>
       </a>
 
       <a class="cartao" routerLink="/relatorios">
-        <span class="icone">📊</span>
-        <h3>Relatórios</h3>
-        <p>Acompanhe os totais e indicadores.</p>
-        <span class="acessar">Acessar módulo →</span>
+        <div class="icone">▥</div>
+        <div class="texto-cartao">
+          <h3>Relatórios</h3>
+          <p>Acompanhe os indicadores do negócio.</p>
+        </div>
+        <span class="seta">→</span>
       </a>
 
     </div>
   </section>
 
+  <!-- INDICADORES -->
   @if (auth.estaLogado()) {
     <section class="painel">
       <app-relatorios-painel />
     </section>
   } @else {
-    <p class="alerta">
-      Entre com a conta demonstrativa para visualizar os indicadores.
-      <a routerLink="/login">Acessar login →</a>
-    </p>
+    <section class="alerta">
+      <div>
+        <h2>Acompanhe seu negócio de perto</h2>
+        <p>Entre na sua conta para visualizar os indicadores do sistema.</p>
+      </div>
+
+      <a routerLink="/login">Fazer login →</a>
+    </section>
   }
+
+  <!-- RODAPÉ -->
+  <footer class="rodape">
+    <p>PetCare — Cuidando de quem faz parte da família.</p>
+  </footer>
 
 </main>

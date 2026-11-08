@@ -1,0 +1,255 @@
+
+:host {
+  display: block;
+  min-height: 100%;
+  background: #f7faf7;
+  color: #33483a;
+}
+
+/* CONTEÚDO DA PÁGINA */
+.pagina-atendimentos {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 45px 70px 50px;
+  box-sizing: border-box;
+}
+
+/* CABEÇALHO */
+.cabecalho-pagina {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+  padding: 0;
+}
+
+.cabecalho-pagina h1 {
+  margin: 0 0 8px;
+  color: #214f39;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+.cabecalho-pagina p {
+  margin: 0;
+  color: #718075;
+  font-size: 14px;
+}
+
+/* BOTÕES */
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 9px;
+  background: #28764d;
+  color: #fff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+
+.botao:hover {
+  background: #1e5d3b;
+  transform: translateY(-1px);
+}
+
+.botao:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.botao.secundario {
+  background: #eaf3eb;
+  color: #28764d;
+}
+
+.botao.secundario:hover {
+  background: #dcecdf;
+}
+
+.botao.perigo {
+  background: #fff0ed;
+  color: #bd5146;
+}
+
+.botao.perigo:hover {
+  background: #ffe0da;
+}
+
+/* FILTROS */
+.barra-filtros {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+  padding: 18px 20px;
+  border: 1px solid #e6eee7;
+  border-radius: 13px;
+  background: #fff;
+}
+
+.barra-filtros label {
+  color: #496b59;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.barra-filtros select {
+  min-width: 180px;
+  padding: 10px 13px;
+  border: 1px solid #dce8de;
+  border-radius: 8px;
+  background: #fff;
+  color: #33483a;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.barra-filtros select:focus {
+  border-color: #28764d;
+  box-shadow: 0 0 0 3px rgba(40, 118, 77, 0.1);
+}
+
+/* TABELA */
+.tabela-container {
+  overflow-x: auto;
+  border: 1px solid #e6eee7;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(36, 75, 58, 0.04);
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tabela th {
+  padding: 17px 18px;
+  background: #edf5ef;
+  color: #41624e;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.tabela td {
+  padding: 17px 18px;
+  border-bottom: 1px solid #edf1ed;
+  color: #526458;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.tabela tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabela tbody tr:hover {
+  background: #fafcf9;
+}
+
+/* STATUS */
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 11px;
+  border-radius: 20px;
+  background: #eaf3eb;
+  color: #28764d;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+/* AÇÕES */
+.acoes {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* MENSAGENS */
+.alerta,
+.carregando,
+.vazio {
+  margin: 20px 0;
+  padding: 17px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.sucesso {
+  border: 1px solid #cce5d1;
+  background: #edf8ef;
+  color: #28764d;
+}
+
+.erro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  border: 1px solid #f0d2cc;
+  background: #fff3f0;
+  color: #a34338;
+}
+
+.carregando,
+.vazio {
+  border: 1px solid #e6eee7;
+  background: #fff;
+  color: #718075;
+  text-align: center;
+}
+
+/* CELULAR */
+@media (max-width: 650px) {
+  .pagina-atendimentos {
+    padding: 30px 20px 35px;
+  }
+
+  .cabecalho-pagina {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .cabecalho-pagina h1 {
+    font-size: 26px;
+  }
+
+  .barra-filtros {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .barra-filtros select {
+    width: 100%;
+  }
+
+  .tabela {
+    min-width: 850px;
+  }
+
+  .erro {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+:host .cabecalho-pagina h1 {
+  color: #214f39 !important;
+  font-family: inherit !important;
+}
