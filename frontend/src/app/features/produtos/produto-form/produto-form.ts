@@ -12,6 +12,7 @@ import { ProdutosService } from '../services/produtos.service';
 @Component({
   selector: 'app-produto-form',
   imports: [ReactiveFormsModule, RouterLink],
+  styleUrl: './produto-form.css',
   templateUrl: './produto-form.html',
 })
 export class ProdutoForm implements OnInit {

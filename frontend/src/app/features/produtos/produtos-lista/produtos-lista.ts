@@ -1,29 +1,48 @@
+
 import { CurrencyPipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ProdutoCard } from '../produto-card/produto-card';
 import { CATEGORIAS, Categoria, Produto } from '../produto.model';
 import { ProdutosService } from '../services/produtos.service';
 import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
 
-/** Tela de listagem (componente de página — PDF 02, cap. 4). */
+/** Tela de listagem de produtos. */
 @Component({
   selector: 'app-produtos-lista',
   imports: [RouterLink, CurrencyPipe, ProdutoCard],
   templateUrl: './produtos-lista.html',
+  styleUrl: './produtos-lista.css',
 })
 export class ProdutosLista implements OnInit {
   private readonly produtosService = inject(ProdutosService);
   private readonly confirmacao = inject(ConfirmacaoService);
 
   protected readonly categorias = CATEGORIAS;
-  // Estado da tela com signals (PDF 02, cap. 11)
+
+  // Lista de produtos
   protected readonly produtos = signal<Produto[]>([]);
+
+  // Indicadores do estoque
+  protected readonly totalProdutos = computed(
+    () => this.produtos().length
+  );
+
+  protected readonly produtosEmEstoque = computed(
+    () => this.produtos().filter(p => p.estoque > 0).length
+  );
+
+  protected readonly produtosEsgotados = computed(
+    () => this.produtos().filter(p => p.estoque === 0).length
+  );
+
+  // Estados da tela
   protected readonly carregando = signal(false);
   protected readonly erro = signal<string | null>(null);
   protected readonly sucesso = signal<string | null>(null);
   protected readonly filtro = signal<Categoria | ''>('');
-  // Estado LOCAL da tela: como mostrar a lista (aula 02 — @if e componente filho)
+
+  // Forma de exibição
   protected readonly modo = signal<'tabela' | 'cartoes'>('tabela');
 
   ngOnInit(): void {
@@ -38,6 +57,7 @@ export class ProdutosLista implements OnInit {
   protected carregar(): void {
     this.carregando.set(true);
     this.erro.set(null);
+
     this.produtosService.listar(this.filtro() || undefined).subscribe({
       next: (lista) => {
         this.produtos.set(lista);
@@ -57,9 +77,12 @@ export class ProdutosLista implements OnInit {
       textoConfirmar: 'Sim, excluir',
       tipo: 'perigo',
     });
+
     if (!aceitou) return;
+
     this.erro.set(null);
     this.sucesso.set(null);
+
     this.produtosService.remover(produto._id).subscribe({
       next: () => {
         this.sucesso.set(`Produto "${produto.nome}" excluído.`);
