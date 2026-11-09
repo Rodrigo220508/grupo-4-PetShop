@@ -7,12 +7,16 @@
 }
 
 /* CONTEÚDO DA PÁGINA */
-.pagina-atendimentos {
+.pagina-atendimento {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 45px 70px 50px;
+  padding: 35px 35px 40px;
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
 }
 
 /* CABEÇALHO */
