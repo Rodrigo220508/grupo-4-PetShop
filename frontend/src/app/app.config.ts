@@ -1,11 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
-import {
-  ApplicationConfig,
-  LOCALE_ID,
-  provideBrowserGlobalErrorListeners,
-} from '@angular/core';
+import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
@@ -28,9 +24,11 @@ import { AtendimentosMockService } from './features/atendimentos/services/atendi
 
 import { ServicosService } from './features/servicos/services/servicos.service';
 import { ServicosMockService } from './features/servicos/services/servicos-mock.service';
+import { ServicosApiService } from './features/servicos/services/servicos-api.service';
 
 import { ProfissionaisService } from './features/profissionais/services/profissionais.service';
 import { ProfissionaisMockService } from './features/profissionais/services/profissionais-mock.service';
+import { ProfissionaisApiService } from './features/profissionais/services/profissionais-api.service';
 
 registerLocaleData(localePt);
 
@@ -55,11 +53,15 @@ export const appConfig: ApplicationConfig = {
     },
     {
       provide: AtendimentosService,
-      useClass: environment.usarMock
-        ? AtendimentosMockService
-        : AtendimentosApiService,
+      useClass: environment.usarMock ? AtendimentosMockService : AtendimentosApiService,
     },
-    { provide: ServicosService, useClass: ServicosMockService },
-    { provide: ProfissionaisService, useClass: ProfissionaisMockService },
+    {
+      provide: ServicosService,
+      useClass: environment.usarMock ? ServicosMockService : ServicosApiService,
+    },
+    {
+      provide: ProfissionaisService,
+      useClass: environment.usarMock ? ProfissionaisMockService : ProfissionaisApiService,
+    },
   ],
 };
