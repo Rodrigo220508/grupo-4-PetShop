@@ -13,6 +13,7 @@ import { Produto } from '../produto.model';
   selector: 'app-produto-card',
   imports: [CurrencyPipe, RouterLink],
   templateUrl: './produto-card.html',
+  styleUrl: './produto-card.css',
 })
 export class ProdutoCard {
   /** Obrigatório: o pai SEMPRE precisa informar o produto. */

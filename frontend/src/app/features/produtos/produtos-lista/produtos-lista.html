@@ -1,73 +1,163 @@
-<div class="cabecalho-pagina">
-  <h1>Produtos</h1>
-  <a class="botao" routerLink="novo">+ Novo produto</a>
-</div>
 
-<div class="barra-filtros">
-  <label for="filtro-categoria">Categoria</label>
-  <select id="filtro-categoria" [value]="filtro()" (change)="filtrar($any($event.target).value)">
-    <option value="">Todas</option>
-    @for (c of categorias; track c) {
-      <option [value]="c">{{ c }}</option>
+<div class="pagina-produtos">
+
+  <header class="cabecalho-pagina">
+    <div class="titulo-pagina">
+      <span class="subtitulo">GESTÃO DA LOJA</span>
+      <h1>Produtos</h1>
+      <p>Gerencie os produtos e acompanhe o estoque da sua loja.</p>
+    </div>
+
+    <a class="botao-novo" routerLink="novo">
+      <span>+</span> Novo produto
+    </a>
+  </header>
+
+  <section class="resumo-produtos">
+
+    <article class="indicador total">
+      <span class="indicador-titulo">Total de produtos</span>
+      <strong class="indicador-numero">{{ totalProdutos() }}</strong>
+      <small class="indicador-descricao">Produtos cadastrados</small>
+    </article>
+
+    <article class="indicador disponiveis">
+      <span class="indicador-titulo">Em estoque</span>
+      <strong class="indicador-numero">{{ produtosEmEstoque() }}</strong>
+      <small class="indicador-descricao">Produtos disponíveis</small>
+    </article>
+
+    <article class="indicador esgotados">
+      <span class="indicador-titulo">Sem estoque</span>
+      <strong class="indicador-numero">{{ produtosEsgotados() }}</strong>
+      <small class="indicador-descricao">Precisam de reposição</small>
+    </article>
+
+  </section>
+
+  <section class="area-listagem">
+
+    <div class="topo-listagem">
+      <div>
+        <h2>Lista de produtos</h2>
+        <p>Consulte e gerencie os produtos cadastrados.</p>
+      </div>
+
+      <div class="barra-filtros">
+        <div class="filtro-categoria">
+          <label for="filtro-categoria">Categoria</label>
+          <select
+            id="filtro-categoria"
+            [value]="filtro()"
+            (change)="filtrar($any($event.target).value)">
+            <option value="">Todas</option>
+            @for (c of categorias; track c) {
+              <option [value]="c">{{ c }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="alternar-modo" role="group" aria-label="Forma de exibição">
+          <button
+            type="button"
+            [class.ativo]="modo() === 'tabela'"
+            (click)="modo.set('tabela')">
+            Tabela
+          </button>
+
+          <button
+            type="button"
+            [class.ativo]="modo() === 'cartoes'"
+            (click)="modo.set('cartoes')">
+            Cartões
+          </button>
+        </div>
+      </div>
+    </div>
+
+    @if (sucesso()) {
+      <p class="alerta sucesso" role="status">{{ sucesso() }}</p>
     }
-  </select>
 
-  <div class="alternar-modo" role="group" aria-label="Forma de exibição">
-    <button type="button" class="botao secundario" [class.ativo]="modo() === 'tabela'" (click)="modo.set('tabela')">
-      Tabela
-    </button>
-    <button type="button" class="botao secundario" [class.ativo]="modo() === 'cartoes'" (click)="modo.set('cartoes')">
-      Cartões
-    </button>
-  </div>
-</div>
-
-@if (sucesso()) {
-  <p class="alerta sucesso" role="status">{{ sucesso() }}</p>
-}
-@if (erro()) {
-  <p class="alerta erro" role="alert">{{ erro() }}</p>
-}
-
-@if (carregando()) {
-  <p class="carregando">Carregando produtos...</p>
-} @else if (produtos().length === 0) {
-  <p class="vazio">Nenhum produto encontrado.</p>
-} @else if (modo() === 'cartoes') {
-  <!-- Componente filho reutilizável: o pai passa o produto e escuta o evento -->
-  <div class="grade-cartoes">
-    @for (p of produtos(); track p._id) {
-      <app-produto-card [produto]="p" (excluir)="excluir($event)" />
+    @if (erro()) {
+      <p class="alerta erro" role="alert">{{ erro() }}</p>
     }
-  </div>
-} @else {
-  <div class="tabela-container">
-    <table class="tabela">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Categoria</th>
-          <th class="numero">Preço</th>
-          <th class="numero">Estoque</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
+
+    @if (carregando()) {
+      <p class="carregando">Carregando produtos...</p>
+    } @else if (produtos().length === 0) {
+      <p class="vazio">Nenhum produto encontrado.</p>
+    } @else if (modo() === 'cartoes') {
+
+      <div class="grade-cartoes">
         @for (p of produtos(); track p._id) {
-          <tr>
-            <td>{{ p.nome }}</td>
-            <td><span class="etiqueta">{{ p.categoria }}</span></td>
-            <td class="numero">{{ p.preco | currency: 'BRL' }}</td>
-            <td class="numero">{{ p.estoque }}</td>
-            <td>
-              <div class="acoes">
-                <a class="botao secundario" [routerLink]="[p._id, 'editar']">Editar</a>
-                <button type="button" class="botao perigo" (click)="excluir(p)">Excluir</button>
-              </div>
-            </td>
-          </tr>
+          <app-produto-card
+            [produto]="p"
+            (excluir)="excluir($event)" />
         }
-      </tbody>
-    </table>
-  </div>
-}
+      </div>
+
+    } @else {
+
+      <div class="tabela-container">
+        <table class="tabela">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Categoria</th>
+              <th class="numero">Preço</th>
+              <th class="numero">Estoque</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (p of produtos(); track p._id) {
+              <tr>
+                <td class="nome-produto">{{ p.nome }}</td>
+
+                <td>
+                  <span class="etiqueta">{{ p.categoria }}</span>
+                </td>
+
+                <td class="numero preco-produto">
+                  {{ p.preco | currency: 'BRL' }}
+                </td>
+
+                <td class="numero">{{ p.estoque }}</td>
+
+                <td>
+                  @if (p.estoque === 0) {
+                    <span class="status esgotado">Sem estoque</span>
+                  } @else {
+                    <span class="status disponivel">Disponível</span>
+                  }
+                </td>
+
+                <td>
+                  <div class="acoes">
+                    <a
+                      class="botao-editar"
+                      [routerLink]="[p._id, 'editar']">
+                      Editar
+                    </a>
+
+                    <button
+                      type="button"
+                      class="botao-excluir"
+                      (click)="excluir(p)">
+                      Excluir
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+    }
+
+  </section>
+</div>
