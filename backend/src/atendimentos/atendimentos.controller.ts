@@ -7,13 +7,20 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Perfis } from '../auth/decorators/perfis.decorator';
 import { AtendimentosService } from './atendimentos.service';
 import { CreateAtendimentoDto } from './dto/create-atendimento.dto';
 import { MudarStatusDto } from './dto/mudar-status.dto';
 import { UpdateAtendimentoDto } from './dto/update-atendimento.dto';
 import { STATUS, type Status } from './schemas/atendimento.schema';
 @ApiTags('Atendimentos')
+@ApiBearerAuth()
 @Controller('atendimentos')
 export class AtendimentosController {
   constructor(private readonly service: AtendimentosService) {}
@@ -26,19 +33,19 @@ export class AtendimentosController {
   @Get(':id') buscarPorId(@Param('id') id: string) {
     return this.service.buscarPorId(id);
   }
-  @Post() criar(@Body() dto: CreateAtendimentoDto) {
+  @Perfis('admin', 'atendente')
+  @Post()
+  criar(@Body() dto: CreateAtendimentoDto) {
     return this.service.criar(dto);
   }
-  @Patch(':id/status') mudarStatus(
-    @Param('id') id: string,
-    @Body() dto: MudarStatusDto,
-  ) {
+  @Perfis('admin', 'atendente')
+  @Patch(':id/status')
+  mudarStatus(@Param('id') id: string, @Body() dto: MudarStatusDto) {
     return this.service.mudarStatus(id, dto.status);
   }
-  @Patch(':id') atualizar(
-    @Param('id') id: string,
-    @Body() dto: UpdateAtendimentoDto,
-  ) {
+  @Perfis('admin', 'atendente')
+  @Patch(':id')
+  atualizar(@Param('id') id: string, @Body() dto: UpdateAtendimentoDto) {
     return this.service.atualizar(id, dto);
   }
 }

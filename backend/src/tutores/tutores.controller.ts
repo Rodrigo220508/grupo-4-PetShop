@@ -10,12 +10,20 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Perfis } from '../auth/decorators/perfis.decorator';
 import { CreateTutorDto } from './dto/create-tutor.dto';
 import { UpdateTutorDto } from './dto/update-tutor.dto';
 import { TutoresService } from './tutores.service';
 
 @ApiTags('Tutores')
+@ApiBearerAuth()
 @Controller('tutores')
 export class TutoresController {
   constructor(private readonly tutoresService: TutoresService) {}
@@ -34,6 +42,7 @@ export class TutoresController {
     return this.tutoresService.buscarPorId(id);
   }
 
+  @Perfis('admin', 'atendente')
   @Post()
   @ApiOperation({ summary: 'Cadastra um tutor' })
   @ApiResponse({ status: 201, description: 'Tutor criado' })
@@ -43,12 +52,14 @@ export class TutoresController {
     return this.tutoresService.criar(dto);
   }
 
+  @Perfis('admin', 'atendente')
   @Patch(':id')
   @ApiOperation({ summary: 'Atualiza um tutor' })
   atualizar(@Param('id') id: string, @Body() dto: UpdateTutorDto) {
     return this.tutoresService.atualizar(id, dto);
   }
 
+  @Perfis('admin')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Exclui um tutor' })

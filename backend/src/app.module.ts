@@ -7,6 +7,9 @@ import { PetsModule } from './pets/pets.module';
 import { TutoresModule } from './tutores/tutores.module';
 import { ProfissionaisModule } from './profissionais/profissionais.module';
 import { ServicosModule } from './servicos/servicos.module';
+import { UsuariosModule } from './usuarios/usuarios.module';
+import { AuthModule } from './auth/auth.module';
+import { RelatoriosModule } from './relatorios/relatorios.module';
 
 @Module({
   imports: [
@@ -28,6 +31,9 @@ import { ServicosModule } from './servicos/servicos.module';
     TutoresModule,
     ProfissionaisModule,
     ServicosModule,
+    UsuariosModule,
+    AuthModule,
+    RelatoriosModule,
   ],
 })
 export class AppModule {}
