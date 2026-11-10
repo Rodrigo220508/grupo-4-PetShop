@@ -1,12 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsIn,
-  IsInt,
-  IsNumber,
-  IsString,
-  Length,
-  Min,
-} from 'class-validator';
+import { IsIn, IsInt, IsNumber, IsString, Length, Min } from 'class-validator';
 import { CATEGORIAS_SERVICO } from '../schemas/servico.schema';
 import type { CategoriaServico } from '../schemas/servico.schema';
 export class CreateServicoDto {
