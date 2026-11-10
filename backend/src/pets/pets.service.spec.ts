@@ -6,6 +6,7 @@ import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
 import { PetsService } from './pets.service';
 import { Pet } from './schemas/pet.schema';
+import { Tutor } from '../tutores/schemas/tutor.schema';
 
 // Simula as consultas do Mongoose
 const consulta = <T>(resultado: T) => ({
@@ -36,8 +37,13 @@ describe('PetsService', () => {
     findByIdAndDelete: jest.fn(),
   };
 
+  const tutorModelMock = {
+    exists: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
+    tutorModelMock.exists.mockResolvedValue({ _id: 'ID_DO_TUTOR' });
 
     const modulo = await Test.createTestingModule({
       providers: [
@@ -45,6 +51,10 @@ describe('PetsService', () => {
         {
           provide: getModelToken(Pet.name),
           useValue: modelMock,
+        },
+        {
+          provide: getModelToken(Tutor.name),
+          useValue: tutorModelMock,
         },
       ],
     }).compile();

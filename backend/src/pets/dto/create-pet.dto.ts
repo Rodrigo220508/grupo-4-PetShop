@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsDateString,
   IsIn,
+  IsMongoId,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -40,9 +41,9 @@ export class CreatePetDto {
   )
   dataNascimento?: string;
 
-  @ApiProperty({ example: 'ID_DO_TUTOR' })
-  @IsString()
+  @ApiProperty({ example: '665f1c2b9a1e4b0012345678' })
   @IsNotEmpty({ message: 'O tutor é obrigatório' })
+  @IsMongoId({ message: 'O tutor informado não é válido' })
   tutor!: string;
 
   @ApiPropertyOptional({ example: true })
