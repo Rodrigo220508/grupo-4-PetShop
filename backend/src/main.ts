@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { RespostaInterceptor } from './common/interceptors/resposta.interceptor';
+import { ExcecoesFilter } from './common/filters/excecoes.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -48,6 +49,9 @@ async function bootstrap() {
 
   // Padrão único de resposta de sucesso (PDF 04, cap. 14)
   app.useGlobalInterceptors(new RespostaInterceptor());
+
+  // Padrão único de resposta de erro e logs (aula 14)
+  app.useGlobalFilters(new ExcecoesFilter());
 
   // Documentação Swagger em http://localhost:3000/api/docs (PDF 06)
   const config = new DocumentBuilder()

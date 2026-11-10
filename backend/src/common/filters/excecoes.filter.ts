@@ -13,8 +13,7 @@ import { Request, Response } from 'express';
  * Captura qualquer erro lançado pela aplicação, padroniza a resposta JSON
  * e registra logs sem expor detalhes internos ao cliente.
  *
- * Registre no main.ts depois de passar nos 6 testes obrigatórios:
- * app.useGlobalFilters(new ExcecoesFilter());
+ * Registrado no main.ts: app.useGlobalFilters(new ExcecoesFilter());
  */
 @Catch() // sem parâmetro = captura QUALQUER erro
 export class ExcecoesFilter implements ExceptionFilter {
@@ -30,19 +29,38 @@ export class ExcecoesFilter implements ExceptionFilter {
         ? excecao.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    // TODO 1: monte a mensagem.
-    //         HttpException → use a mensagem da exceção (excecao.getResponse()).
-    //         outro erro    → "Erro interno. Tente novamente mais tarde." (nunca o stack!)
-    // TODO 2: status >= 500 → this.logger.error(método, url, stack)
-    //         senão (4xx)   → this.logger.warn(método, url, status, mensagem)
+    // HttpException → mensagem prevista; outro erro → mensagem genérica (nunca o stack)
+    const message =
+      excecao instanceof HttpException
+        ? this.mensagemDe(excecao)
+        : 'Erro interno. Tente novamente mais tarde.';
+
+    const rota = `${requisicao.method} ${requisicao.url} → ${status}`;
+    if (status >= 500) {
+      const stack = excecao instanceof Error ? excecao.stack : String(excecao);
+      this.logger.error(rota, stack ?? '');
+    } else {
+      this.logger.warn(`${rota}: ${JSON.stringify(message)}`);
+    }
 
     resposta.status(status).json({
       sucesso: false,
       status,
-      message: 'TODO',
+      message,
       caminho: requisicao.url,
       dataHora: new Date().toISOString(),
     });
   }
-}
 
+  /** Texto (ou lista de textos do ValidationPipe) que vai para o cliente. */
+  private mensagemDe(excecao: HttpException): string | string[] {
+    const corpo = excecao.getResponse();
+    if (typeof corpo === 'string') return corpo;
+    if (corpo && typeof corpo === 'object' && 'message' in corpo) {
+      const { message } = corpo;
+      if (typeof message === 'string') return message;
+      if (Array.isArray(message)) return message.map(String);
+    }
+    return excecao.message;
+  }
+}
