@@ -33,7 +33,7 @@ export class ProfissionaisController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Busca um profissional pelo id' })
-  @ApiResponse({ status: 404, description: 'Profissional nao encontrado' })
+  @ApiResponse({ status: 404, description: 'Profissional não encontrado' })
   buscarPorId(@Param('id') id: string) {
     return this.profissionaisService.buscarPorId(id);
   }

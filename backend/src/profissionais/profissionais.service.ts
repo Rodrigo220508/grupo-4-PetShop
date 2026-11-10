@@ -37,7 +37,7 @@ export class ProfissionaisService {
       .exec();
 
     if (!profissional) {
-      throw new NotFoundException(`Profissional ${id} nao encontrado`);
+      throw new NotFoundException(`Profissional ${id} não encontrado`);
     }
 
     return profissional;
@@ -75,7 +75,7 @@ export class ProfissionaisService {
       .exec();
 
     if (!atualizado) {
-      throw new NotFoundException(`Profissional ${id} nao encontrado`);
+      throw new NotFoundException(`Profissional ${id} não encontrado`);
     }
 
     return atualizado;
@@ -87,13 +87,13 @@ export class ProfissionaisService {
     const removido = await this.profissionalModel.findByIdAndDelete(id).exec();
 
     if (!removido) {
-      throw new NotFoundException(`Profissional ${id} nao encontrado`);
+      throw new NotFoundException(`Profissional ${id} não encontrado`);
     }
   }
 
   private validarId(id: string): void {
     if (!isValidObjectId(id)) {
-      throw new BadRequestException(`O id "${id}" nao e valido`);
+      throw new BadRequestException(`O id "${id}" não é válido`);
     }
   }
 
@@ -107,7 +107,7 @@ export class ProfissionaisService {
 
     if (existente && String(existente._id) !== idAtual) {
       throw new ConflictException(
-        `Ja existe um profissional com o e-mail ${normalizado}`,
+        `Já existe um profissional com o e-mail ${normalizado}`,
       );
     }
   }
