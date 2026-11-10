@@ -1,10 +1,10 @@
 <div class="acesso">
   <section class="apresentacao" aria-labelledby="titulo-boas-vindas">
     <div class="simbolo" aria-hidden="true">🐾</div>
-    <p class="sobretitulo">PETSHOP · CHECKPOINT C1</p>
+    <p class="sobretitulo">PETSHOP</p>
     <h1 id="titulo-boas-vindas">Bem-vindo ao PetShop</h1>
-    <p>Faça login para experimentar as funcionalidades demonstrativas do projeto.</p>
-    <div class="destaques"><span>✓ Formulários reativos</span><span>✓ Autenticação mock</span></div>
+    <p>Faça login para acessar agendamentos, pets, tutores e o painel do negócio.</p>
+    <div class="destaques"><span>✓ Acesso protegido</span><span>✓ Dados salvos no sistema</span></div>
   </section>
   <section class="formulario-login" aria-labelledby="titulo-login">
     @if (auth.estaLogado()) {
@@ -13,7 +13,7 @@
       <a class="botao botao-largo" routerLink="/">Ir ao início</a>
       <button class="botao secundario botao-largo" type="button" (click)="sair()">Sair da conta</button>
     } @else {
-      <p class="etapa">ACESSO DEMONSTRATIVO</p>
+      <p class="etapa">ACESSO</p>
       <h2 id="titulo-login">Entrar</h2>
       @if (cadastroRealizado) { <p class="alerta sucesso" role="status">Conta criada! Faça login para continuar.</p> }
       <form [formGroup]="formulario" (ngSubmit)="entrar()" novalidate>
@@ -38,11 +38,9 @@
           }
         </div>
         @if (erro()) { <p class="alerta erro" role="alert">{{ erro() }}</p> }
-        <button class="botao botao-largo botao-entrar" type="submit" [disabled]="formulario.invalid">Entrar no PetShop</button>
+        <button class="botao botao-largo botao-entrar" type="submit" [disabled]="formulario.invalid || enviando()">{{ enviando() ? 'Entrando...' : 'Entrar no PetShop' }}</button>
       </form>
-      <p class="texto-auxiliar">Conta de teste: <strong>admin@petshop.demo</strong> / <strong>Petshop123!</strong></p>
       <p class="aviso">Não tem uma conta? <a routerLink="/cadastro">Cadastrar usuário</a>.</p>
-      <p class="aviso">Este login é um mock de aula, sem API nem banco de dados. Não use senhas reais.</p>
     }
   </section>
 </div>

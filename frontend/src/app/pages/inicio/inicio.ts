@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { AuthMockService } from '../../core/auth/auth-mock.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
 import { RelatoriosPainel } from '../../features/relatorios/relatorios-painel/relatorios-painel';
 
@@ -10,5 +10,5 @@ import { RelatoriosPainel } from '../../features/relatorios/relatorios-painel/re
   styleUrl: './inicio.css',
 })
 export class Inicio {
-  protected readonly auth = inject(AuthMockService);
+  protected readonly auth = inject(AuthService);
 }

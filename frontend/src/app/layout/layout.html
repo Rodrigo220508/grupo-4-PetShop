@@ -51,7 +51,9 @@
     <a routerLink="/produtos" routerLinkActive="ativo">Produtos</a>
     <a routerLink="/servicos" routerLinkActive="ativo">Serviços</a>
     <a routerLink="/profissionais" routerLinkActive="ativo">Profissionais</a>
-    <a routerLink="/relatorios" routerLinkActive="ativo">Relatórios </a>
+    @if (auth.ehAdmin()) {
+      <a routerLink="/relatorios" routerLinkActive="ativo">Relatórios </a>
+    }
 
   </nav>
 
