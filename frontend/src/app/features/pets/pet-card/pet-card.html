@@ -18,7 +18,7 @@
     @if (pet().dataNascimento) {
       <p>
         <strong>Nascimento:</strong>
-        {{ pet().dataNascimento }}
+        {{ pet().dataNascimento | date: 'dd/MM/yyyy' : 'UTC' }}
       </p>
     }
 
