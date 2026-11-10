@@ -9,12 +9,15 @@ import { isValidObjectId, Model } from 'mongoose';
 import { CreateTutorDto } from './dto/create-tutor.dto';
 import { UpdateTutorDto } from './dto/update-tutor.dto';
 import { Tutor, TutorDocument } from './schemas/tutor.schema';
+import { Pet, PetDocument } from '../pets/schemas/pet.schema';
 
 @Injectable()
 export class TutoresService {
   constructor(
     @InjectModel(Tutor.name)
     private readonly tutorModel: Model<TutorDocument>,
+    @InjectModel(Pet.name)
+    private readonly petModel: Model<PetDocument>,
   ) {}
 
   async listar(busca?: string): Promise<Tutor[]> {
@@ -70,6 +73,15 @@ export class TutoresService {
 
   async remover(id: string): Promise<void> {
     this.validarId(id);
+
+    // Não deixa pets sem tutor
+    const temPets = await this.petModel.exists({ tutor: id });
+
+    if (temPets) {
+      throw new ConflictException(
+        'Este tutor possui pets cadastrados. Remova ou transfira os pets antes de excluir.',
+      );
+    }
 
     const removido = await this.tutorModel.findByIdAndDelete(id).exec();
 
