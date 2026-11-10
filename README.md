@@ -55,6 +55,16 @@ npm start                   # http://localhost:4200
 
 - Documentação da API (Swagger): http://localhost:3000/api/docs
 - Testes do back-end: `cd backend && npm test`
+- No `backend/.env`, troque o `JWT_SECRET` por um texto aleatório de pelo menos 32 caracteres. Sem ele a API não inicia.
+
+**Contas criadas pelo `npm run seed`** (só para desenvolvimento):
+
+| E-mail | Senha | Perfil |
+| --- | --- | --- |
+| `admin@petshop.com` | `Admin@123` | admin |
+| `atendente@petshop.com` | `Atende@123` | atendente |
+
+Contas criadas pela tela **Criar conta** começam com o perfil `consulta`.
 
 > Se o `npm install` mostrar o erro `Cannot read properties of null (reading 'edgesOut')`, rode `npx npm@11 install`.
 
@@ -93,19 +103,39 @@ frontend/
 
 | Código | Regra | Módulo | Onde está (arquivo) |
 | --- | --- | --- | --- |
-| RN01 | ✏️ | ✏️ | ✏️ |
+| RN01 | Não pode haver dois tutores com o mesmo e-mail (409) | Tutores | `backend/src/tutores/tutores.service.ts` |
+| RN02 | Telefone no formato (51) 99999-9999 (400) | Tutores | `backend/src/tutores/dto/create-tutor.dto.ts` |
+| RN03 | Data de nascimento do pet não pode ser futura (400) | Pets | `backend/src/pets/schemas/pet.schema.ts` |
+| RN04 | O tutor do pet precisa existir (404) | Pets | `backend/src/pets/pets.service.ts` |
+| RN05 | Profissional não pode ter dois atendimentos no mesmo horário (409) | Atendimentos | `backend/src/atendimentos/atendimentos.service.ts` |
+| RN06 | Atendimento só pode ser agendado para o futuro (400) | Atendimentos | `backend/src/atendimentos/atendimentos.service.ts` |
+| RN07 | Status segue o fluxo agendado → em atendimento → concluído (ou cancelado) (400) | Atendimentos | `backend/src/atendimentos/atendimentos.service.ts` |
+| RN08 | Não pode haver dois serviços com o mesmo nome (409) | Serviços | `backend/src/servicos/servicos.service.ts` |
+| RN09 | Excluir um serviço só o inativa | Serviços | `backend/src/servicos/servicos.service.ts` |
+| RN10 | Veterinário precisa ter CRMV (400) | Profissionais | `backend/src/profissionais/dto/create-profissional.dto.ts` |
+| RN11 | Não pode haver dois profissionais com o mesmo e-mail (409) | Profissionais | `backend/src/profissionais/profissionais.service.ts` |
+
+Regras extras: atendimentos exigem pet, serviço e profissional existentes e ativos, e um tutor com pets não pode ser excluído (409).
 
 ## ✏️ Perfis de acesso
 
 | Perfil | O que pode fazer |
 | --- | --- |
-| ✏️ | ✏️ |
+| `admin` | Tudo, inclusive excluir, ver relatórios e cadastrar usuários (`POST /usuarios`) |
+| `atendente` | Cadastrar e editar em todos os módulos e mudar o status dos atendimentos; não exclui nem vê relatórios |
+| `consulta` | Apenas listar e ver detalhes |
+
+Sem token a API responde `401`; com um perfil sem permissão, `403`. Na tela, os botões que o perfil não pode usar ficam escondidos.
 
 ## ✏️ Decisões técnicas (ADRs)
 
 Registre as decisões importantes: o que foi decidido, por quê e qual alternativa foi descartada.
 
-1. ✏️
+1. **Senhas com `bcryptjs` em vez de `bcrypt`:** é JavaScript puro, não precisa compilar nada na instalação e é a biblioteca usada nos testes obrigatórios.
+2. **`@nestjs/jwt` na versão 11:** a versão 12 só funciona como módulo ESM, que o Jest do projeto não carrega; a 11 acompanha o NestJS 11.
+3. **Token no `sessionStorage`:** a sessão termina ao fechar a aba, o que reduz o risco de um token esquecido no navegador. Descartado: `localStorage`.
+4. **Cadastro aberto cria perfil `consulta`:** quem se cadastra pela tela não escolhe o próprio perfil; só o admin cria atendentes e admins.
+5. **Relatórios calculados no MongoDB (`aggregate`):** os números vêm prontos da API, em vez de o navegador baixar todas as listas para somar.
 
 ## ✏️ Limitações conhecidas e próximos passos
 
