@@ -12,6 +12,9 @@ export class PetCard {
   // Recebe os dados do pet.
   readonly pet = input.required<Pet>();
 
+  // Nome do tutor (se não vier, mostra o ID).
+  readonly tutorNome = input<string>();
+
   // Comunica à página pai que o usuário quer editar o pet.
   readonly editar = output<Pet>();
 

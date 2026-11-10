@@ -13,6 +13,12 @@ import {
   AtendimentoDocument,
   Status,
 } from './schemas/atendimento.schema';
+import { Pet, PetDocument } from '../pets/schemas/pet.schema';
+import { Servico, ServicoDocument } from '../servicos/schemas/servico.schema';
+import {
+  Profissional,
+  ProfissionalDocument,
+} from '../profissionais/schemas/profissional.schema';
 const TRANSICOES: Record<Status, Status[]> = {
   agendado: ['em_atendimento', 'cancelado'],
   em_atendimento: ['concluido'],
@@ -24,6 +30,12 @@ export class AtendimentosService {
   constructor(
     @InjectModel(Atendimento.name)
     private readonly model: Model<AtendimentoDocument>,
+    @InjectModel(Pet.name)
+    private readonly petModel: Model<PetDocument>,
+    @InjectModel(Servico.name)
+    private readonly servicoModel: Model<ServicoDocument>,
+    @InjectModel(Profissional.name)
+    private readonly profissionalModel: Model<ProfissionalDocument>,
   ) {}
   async listar(status?: Status) {
     if (status && !Object.keys(TRANSICOES).includes(status))
@@ -42,6 +54,7 @@ export class AtendimentosService {
   }
   async criar(dto: CreateAtendimentoDto) {
     this.validarFuturo(dto.dataHora);
+    await this.garantirReferencias(dto);
     await this.garantirHorarioLivre(dto.profissional, new Date(dto.dataHora));
     try {
       const criado = await this.model.create({ ...dto, status: 'agendado' });
@@ -60,6 +73,7 @@ export class AtendimentosService {
     const dataHora = dto.dataHora ?? atual.dataHora.toISOString();
     const profissional = dto.profissional ?? String(atual.profissional);
     this.validarFuturo(dataHora);
+    await this.garantirReferencias(dto);
     await this.garantirHorarioLivre(profissional, new Date(dataHora), id);
     try {
       const atualizado = await this.model
@@ -111,6 +125,28 @@ export class AtendimentosService {
       throw new BadRequestException(
         'O atendimento precisa ser agendado para o futuro',
       );
+  }
+  // Pet, serviço e profissional precisam existir e estar ativos
+  private async garantirReferencias(dto: {
+    pet?: string;
+    servico?: string;
+    profissional?: string;
+  }): Promise<void> {
+    if (dto.pet && !(await this.petModel.exists({ _id: dto.pet, ativo: true })))
+      throw new NotFoundException('Pet não encontrado ou inativo');
+    if (
+      dto.servico &&
+      !(await this.servicoModel.exists({ _id: dto.servico, ativo: true }))
+    )
+      throw new NotFoundException('Serviço não encontrado ou inativo');
+    if (
+      dto.profissional &&
+      !(await this.profissionalModel.exists({
+        _id: dto.profissional,
+        ativo: true,
+      }))
+    )
+      throw new NotFoundException('Profissional não encontrado ou inativo');
   }
   private async garantirHorarioLivre(
     profissional: string,

@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PetsService } from '../services/pets.service';
+import { TutoresService } from '../../tutores/services/tutores.service';
 import { PetCard } from '../pet-card/pet-card';
 import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
 import { ESPECIES, Especie, Pet } from '../pet.model';
@@ -14,6 +15,9 @@ import { ESPECIES, Especie, Pet } from '../pet.model';
 export class PetsLista {
   private readonly api = inject(PetsService);
   private readonly confirmacao = inject(ConfirmacaoService);
+  private readonly tutoresService = inject(TutoresService);
+  // Nome de cada tutor pelo _id, para mostrar no card
+  readonly nomesTutores = signal(new Map<string, string>());
   readonly especies = ESPECIES;
   readonly especieSelecionada = signal<Especie | 'todas'>('todas');
   readonly pets = signal<Pet[]>([]);
@@ -27,6 +31,10 @@ export class PetsLista {
   );
   constructor() {
     this.carregarPets();
+    this.tutoresService.listar().subscribe({
+      next: (tutores) => this.nomesTutores.set(new Map(tutores.map((t) => [t._id, t.nome]))),
+      error: () => undefined, // sem os nomes, o card mostra o ID do tutor
+    });
   }
   carregarPets(): void {
     this.carregando.set(true);

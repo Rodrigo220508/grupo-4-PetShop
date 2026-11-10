@@ -20,9 +20,18 @@ describe('AtendimentosService — regras RN05, RN06, RN07', () => {
     dataHora: futuro(),
   });
 
+  // Pet, serviço e profissional sempre existem nestes testes
+  const referencia = { exists: jest.fn() };
+
   beforeEach(() => {
     jest.resetAllMocks();
-    service = new AtendimentosService(modelo as never);
+    referencia.exists.mockResolvedValue({ _id: 'existe' });
+    service = new AtendimentosService(
+      modelo as never,
+      referencia as never,
+      referencia as never,
+      referencia as never,
+    );
   });
 
   it('RN06: não permite agendar no passado', async () => {

@@ -41,7 +41,7 @@
     <div class="pets-lista">
       @for (pet of petsFiltrados(); track pet._id) {
         <div class="pet-item">
-          <app-pet-card [pet]="pet" />
+          <app-pet-card [pet]="pet" [tutorNome]="nomesTutores().get(pet.tutor) ?? pet.tutor" />
 
           <div class="pet-acoes">
             <a class="botao secundario" [routerLink]="[pet._id, 'editar']">

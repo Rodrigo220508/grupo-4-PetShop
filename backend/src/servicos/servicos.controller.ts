@@ -45,10 +45,7 @@ export class ServicosController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Atualiza um serviço' })
-  atualizar(
-    @Param('id') id: string,
-    @Body() dados: UpdateServicoDto,
-  ) {
+  atualizar(@Param('id') id: string, @Body() dados: UpdateServicoDto) {
     return this.servicosService.atualizar(id, dados);
   }
 

@@ -26,11 +26,7 @@ export class ServicosService {
   }
 
   async listarTodos() {
-    return this.servicoModel
-      .find()
-      .sort({ nome: 1 })
-      .lean()
-      .exec();
+    return this.servicoModel.find().sort({ nome: 1 }).lean().exec();
   }
 
   async buscarPorId(id: string) {
@@ -49,7 +45,9 @@ export class ServicosService {
     const nome = dados.nome.trim();
 
     const existente = await this.servicoModel
-      .findOne({ nome: { $regex: `^${this.escaparRegex(nome)}$`, $options: 'i' } })
+      .findOne({
+        nome: { $regex: `^${this.escaparRegex(nome)}$`, $options: 'i' },
+      })
       .exec();
 
     if (existente) {
@@ -132,8 +130,13 @@ export class ServicosService {
     return valor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  private tratarErroDuplicidade(erro: any) {
-    if (erro?.code === 11000) {
+  private tratarErroDuplicidade(erro: unknown) {
+    if (
+      erro &&
+      typeof erro === 'object' &&
+      'code' in erro &&
+      erro.code === 11000
+    ) {
       throw new ConflictException('Já existe um serviço com esse nome.');
     }
   }
