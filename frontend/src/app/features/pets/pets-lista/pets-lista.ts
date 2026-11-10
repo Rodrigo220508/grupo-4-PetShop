@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { AuthService } from '../../../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
 import { PetsService } from '../services/pets.service';
 import { TutoresService } from '../../tutores/services/tutores.service';
@@ -13,6 +14,8 @@ import { ESPECIES, Especie, Pet } from '../pet.model';
   styleUrl: './pets-lista.css',
 })
 export class PetsLista {
+  // Perfil do usuário: esconde ações que a API recusaria (403)
+  protected readonly auth = inject(AuthService);
   private readonly api = inject(PetsService);
   private readonly confirmacao = inject(ConfirmacaoService);
   private readonly tutoresService = inject(TutoresService);

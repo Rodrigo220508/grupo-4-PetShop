@@ -7,7 +7,9 @@
       <p>Gerencie os serviços oferecidos pela loja.</p>
     </div>
 
-    <a class="botao-novo" routerLink="novo">+ Novo serviço</a>
+    @if (auth.podeEditar()) {
+      <a class="botao-novo" routerLink="novo">+ Novo serviço</a>
+    }
   </div>
 
   <div class="barra-filtros">
@@ -63,17 +65,21 @@
               <td>{{ s.duracaoMinutos }} min</td>
               <td>
                 <div class="acoes">
-                  <a class="botao-editar" [routerLink]="[s._id, 'editar']">
-                    Editar
-                  </a>
+                  @if (auth.podeEditar()) {
+                    <a class="botao-editar" [routerLink]="[s._id, 'editar']">
+                      Editar
+                    </a>
+                  }
 
-                  <button
-                    type="button"
-                    class="botao-inativar"
-                    (click)="excluir(s)"
-                  >
-                    Inativar
-                  </button>
+                  @if (auth.podeExcluir()) {
+                    <button
+                      type="button"
+                      class="botao-inativar"
+                      (click)="excluir(s)"
+                    >
+                      Inativar
+                    </button>
+                  }
                 </div>
               </td>
             </tr>

@@ -25,12 +25,16 @@
       Ver detalhes
     </button>
 
-    <button type="button" (click)="editarTutor()">
-      Editar
-    </button>
+    @if (auth.podeEditar()) {
+      <button type="button" (click)="editarTutor()">
+        Editar
+      </button>
+    }
 
-    <button type="button" (click)="excluirTutor()">
-      Excluir
-    </button>
+    @if (auth.podeExcluir()) {
+      <button type="button" (click)="excluirTutor()">
+        Excluir
+      </button>
+    }
   </div>
 </article>

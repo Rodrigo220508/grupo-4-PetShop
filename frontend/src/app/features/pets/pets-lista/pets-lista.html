@@ -5,7 +5,9 @@
       <h1>Pets cadastrados</h1>
       <p>Gerencie os animais cadastrados no PetShop.</p>
     </div>
-    <a class="botao botao-novo" routerLink="novo">+ Cadastrar pet</a>
+    @if (auth.podeEditar()) {
+      <a class="botao botao-novo" routerLink="novo">+ Cadastrar pet</a>
+    }
   </header>
 
   @if (carregando()) {
@@ -44,17 +46,21 @@
           <app-pet-card [pet]="pet" [tutorNome]="nomesTutores().get(pet.tutor) ?? pet.tutor" />
 
           <div class="pet-acoes">
-            <a class="botao secundario" [routerLink]="[pet._id, 'editar']">
-              Editar
-            </a>
+            @if (auth.podeEditar()) {
+              <a class="botao secundario" [routerLink]="[pet._id, 'editar']">
+                Editar
+              </a>
+            }
 
-            <button
-              type="button"
-              class="botao perigo"
-              (click)="excluirPet(pet._id)"
-            >
-              Excluir
-            </button>
+            @if (auth.podeExcluir()) {
+              <button
+                type="button"
+                class="botao perigo"
+                (click)="excluirPet(pet._id)"
+              >
+                Excluir
+              </button>
+            }
           </div>
         </div>
       } @empty {

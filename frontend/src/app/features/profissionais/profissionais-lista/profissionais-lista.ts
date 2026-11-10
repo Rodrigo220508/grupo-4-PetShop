@@ -1,4 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { AuthService } from '../../../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
 import { FUNCOES, Funcao, Profissional } from '../profissional.model';
 import { ProfissionaisService } from '../services/profissionais.service';
@@ -9,6 +10,8 @@ import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
   templateUrl: './profissionais-lista.html',
 })
 export class ProfissionaisLista implements OnInit {
+  // Perfil do usuário: esconde ações que a API recusaria (403)
+  protected readonly auth = inject(AuthService);
   private readonly api = inject(ProfissionaisService);
   private readonly confirmacao = inject(ConfirmacaoService);
   protected readonly funcoes = FUNCOES;

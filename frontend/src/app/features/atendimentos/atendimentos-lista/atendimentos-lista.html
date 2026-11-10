@@ -3,7 +3,9 @@
     <h1>Atendimentos</h1>
     <p>Agenda de banho, tosa e consultas.</p>
   </div>
-  <a class="botao" routerLink="novo">+ Agendar atendimento</a>
+  @if (auth.podeEditar()) {
+    <a class="botao" routerLink="novo">+ Agendar atendimento</a>
+  }
 </div>
 <div class="barra-filtros">
   <label for="filtro-status">Status</label>
@@ -52,10 +54,10 @@
             </td>
             <td>
               <div class="acoes">
-                @if (a.status === 'agendado') {
+                @if (a.status === 'agendado' && auth.podeEditar()) {
                   <a class="botao secundario" [routerLink]="[a._id, 'editar']">Editar</a>
                 }
-                @for (destino of transicoes[a.status]; track destino) {
+                @for (destino of (auth.podeEditar() ? transicoes[a.status] : []); track destino) {
                   <button
                     type="button"
                     class="botao"
