@@ -1,5 +1,6 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, inject } from '@angular/core';
+import { AuthService } from '../../../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
 import { Produto } from '../produto.model';
 
@@ -16,6 +17,8 @@ import { Produto } from '../produto.model';
   styleUrl: './produto-card.css',
 })
 export class ProdutoCard {
+  // Perfil do usuário: esconde ações que a API recusaria (403)
+  protected readonly auth = inject(AuthService);
   /** Obrigatório: o pai SEMPRE precisa informar o produto. */
   readonly produto = input.required<Produto>();
 

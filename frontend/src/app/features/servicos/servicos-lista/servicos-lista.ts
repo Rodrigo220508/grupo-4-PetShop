@@ -1,6 +1,7 @@
 
 import { CurrencyPipe } from '@angular/common';
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { AuthService } from '../../../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
 import { ServicosService } from '../services/servicos.service';
 import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
@@ -13,6 +14,8 @@ import { Servico, CATEGORIAS_SERVICO, CategoriaServico } from '../servico.model'
   styleUrl: './servico-lista.css',
 })
 export class ServicosLista implements OnInit {
+  // Perfil do usuário: esconde ações que a API recusaria (403)
+  protected readonly auth = inject(AuthService);
   private readonly api = inject(ServicosService);
   private readonly confirmacao = inject(ConfirmacaoService);
 

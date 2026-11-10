@@ -1,4 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
+import { AuthService } from '../../../core/auth/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -15,6 +16,8 @@ import { TutorCard } from '../tutor-card/tutor-card';
   styleUrl: './tutores-lista.css',
 })
 export class TutoresLista implements OnInit {
+  // Perfil do usuário: esconde ações que a API recusaria (403)
+  protected readonly auth = inject(AuthService);
   tutores: Tutor[] = [];
   termoBusca = '';
 

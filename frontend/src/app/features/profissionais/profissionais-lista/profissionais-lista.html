@@ -1,6 +1,8 @@
 <div class="cabecalho-pagina">
   <h1>Profissionais</h1>
-  <a class="botao" routerLink="novo">+ Novo profissional</a>
+  @if (auth.podeEditar()) {
+    <a class="botao" routerLink="novo">+ Novo profissional</a>
+  }
 </div>
 <div class="barra-filtros">
   <label for="filtro-prof">Função</label
@@ -44,8 +46,12 @@
             <td>{{ p.email }}</td>
             <td>
               <div class="acoes">
-                <a class="botao secundario" [routerLink]="[p._id, 'editar']">Editar</a
-                ><button class="botao perigo" type="button" (click)="excluir(p)">Excluir</button>
+                @if (auth.podeEditar()) {
+                  <a class="botao secundario" [routerLink]="[p._id, 'editar']">Editar</a>
+                }
+                @if (auth.podeExcluir()) {
+                  <button class="botao perigo" type="button" (click)="excluir(p)">Excluir</button>
+                }
               </div>
             </td>
           </tr>

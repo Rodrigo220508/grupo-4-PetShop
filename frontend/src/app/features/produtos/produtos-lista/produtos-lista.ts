@@ -1,6 +1,7 @@
 
 import { CurrencyPipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { AuthService } from '../../../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
 import { ProdutoCard } from '../produto-card/produto-card';
 import { CATEGORIAS, Categoria, Produto } from '../produto.model';
@@ -15,6 +16,8 @@ import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
   styleUrl: './produtos-lista.css',
 })
 export class ProdutosLista implements OnInit {
+  // Perfil do usuário: esconde ações que a API recusaria (403)
+  protected readonly auth = inject(AuthService);
   private readonly produtosService = inject(ProdutosService);
   private readonly confirmacao = inject(ConfirmacaoService);
 

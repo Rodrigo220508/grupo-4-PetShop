@@ -1,6 +1,7 @@
 
 import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { AuthService } from '../../../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { idDe, Referencia } from '../../../core/models/referencia';
@@ -18,6 +19,8 @@ import { AtendimentosService } from '../services/atendimentos.service';
   styleUrl: './atendimento-lista.css',
 })
 export class AtendimentosLista implements OnInit {
+  // Perfil do usuário: esconde ações que a API recusaria (403)
+  protected readonly auth = inject(AuthService);
   private readonly api = inject(AtendimentosService);
   private readonly confirmacao = inject(ConfirmacaoService);
   private readonly petsService = inject(PetsService);

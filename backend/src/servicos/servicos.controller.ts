@@ -9,12 +9,14 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Perfis } from '../auth/decorators/perfis.decorator';
 import { CreateServicoDto } from './dto/create-servico.dto';
 import { UpdateServicoDto } from './dto/update-servico.dto';
 import { ServicosService } from './servicos.service';
 
 @ApiTags('Serviços')
+@ApiBearerAuth()
 @Controller('servicos')
 export class ServicosController {
   constructor(private readonly servicosService: ServicosService) {}
@@ -37,18 +39,21 @@ export class ServicosController {
     return this.servicosService.buscarPorId(id);
   }
 
+  @Perfis('admin', 'atendente')
   @Post()
   @ApiOperation({ summary: 'Cadastra um serviço' })
   criar(@Body() dados: CreateServicoDto) {
     return this.servicosService.criar(dados);
   }
 
+  @Perfis('admin', 'atendente')
   @Patch(':id')
   @ApiOperation({ summary: 'Atualiza um serviço' })
   atualizar(@Param('id') id: string, @Body() dados: UpdateServicoDto) {
     return this.servicosService.atualizar(id, dados);
   }
 
+  @Perfis('admin')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Desativa um serviço' })

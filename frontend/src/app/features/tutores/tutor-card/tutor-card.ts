@@ -1,4 +1,5 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, inject } from '@angular/core';
+import { AuthService } from '../../../core/auth/auth.service';
 import { Tutor } from '../tutor.model';
 
 @Component({
@@ -9,6 +10,8 @@ import { Tutor } from '../tutor.model';
   styleUrl: './tutor-card.css',
 })
 export class TutorCard {
+  // Perfil do usuário: esconde ações que a API recusaria (403)
+  protected readonly auth = inject(AuthService);
   tutor = input.required<Tutor>();
 
   selecionar = output<Tutor>();

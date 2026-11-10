@@ -10,13 +10,21 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Perfis } from '../auth/decorators/perfis.decorator';
 import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
 import { PetsService } from './pets.service';
 import { ESPECIES, type Especie } from './schemas/pet.schema';
 
 @ApiTags('Pets')
+@ApiBearerAuth()
 @Controller('pets')
 export class PetsController {
   constructor(private readonly petsService: PetsService) {}
@@ -35,6 +43,7 @@ export class PetsController {
     return this.petsService.buscarPorId(id);
   }
 
+  @Perfis('admin', 'atendente')
   @Post()
   @ApiOperation({ summary: 'Cadastra um pet' })
   @ApiResponse({ status: 201, description: 'Pet criado' })
@@ -43,6 +52,7 @@ export class PetsController {
     return this.petsService.criar(dto);
   }
 
+  @Perfis('admin', 'atendente')
   @Patch(':id')
   @ApiOperation({ summary: 'Atualiza um pet' })
   @ApiResponse({ status: 404, description: 'Pet não encontrado' })
@@ -50,6 +60,7 @@ export class PetsController {
     return this.petsService.atualizar(id, dto);
   }
 
+  @Perfis('admin')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Exclui um pet' })

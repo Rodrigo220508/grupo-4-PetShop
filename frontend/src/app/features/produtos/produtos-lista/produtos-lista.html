@@ -8,9 +8,11 @@
       <p>Gerencie os produtos e acompanhe o estoque da sua loja.</p>
     </div>
 
-    <a class="botao-novo" routerLink="novo">
-      <span>+</span> Novo produto
-    </a>
+    @if (auth.podeEditar()) {
+      <a class="botao-novo" routerLink="novo">
+        <span>+</span> Novo produto
+      </a>
+    }
   </header>
 
   <section class="resumo-produtos">
@@ -137,18 +139,22 @@
 
                 <td>
                   <div class="acoes">
-                    <a
-                      class="botao-editar"
-                      [routerLink]="[p._id, 'editar']">
-                      Editar
-                    </a>
+                    @if (auth.podeEditar()) {
+                      <a
+                        class="botao-editar"
+                        [routerLink]="[p._id, 'editar']">
+                        Editar
+                      </a>
+                    }
 
-                    <button
-                      type="button"
-                      class="botao-excluir"
-                      (click)="excluir(p)">
-                      Excluir
-                    </button>
+                    @if (auth.podeExcluir()) {
+                      <button
+                        type="button"
+                        class="botao-excluir"
+                        (click)="excluir(p)">
+                        Excluir
+                      </button>
+                    }
                   </div>
                 </td>
               </tr>

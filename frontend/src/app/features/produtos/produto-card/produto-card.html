@@ -10,7 +10,11 @@
   }
 
   <div class="acoes">
-    <a class="botao secundario" [routerLink]="['/produtos', produto()._id, 'editar']">Editar</a>
-    <button type="button" class="botao perigo" (click)="pedirExclusao()">Excluir</button>
+    @if (auth.podeEditar()) {
+      <a class="botao secundario" [routerLink]="['/produtos', produto()._id, 'editar']">Editar</a>
+    }
+    @if (auth.podeExcluir()) {
+      <button type="button" class="botao perigo" (click)="pedirExclusao()">Excluir</button>
+    }
   </div>
 </article>

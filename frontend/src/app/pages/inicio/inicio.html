@@ -109,11 +109,11 @@
   </section>
 
   <!-- INDICADORES -->
-  @if (auth.estaLogado()) {
+  @if (auth.ehAdmin()) {
     <section class="painel">
       <app-relatorios-painel />
     </section>
-  } @else {
+  } @else if (!auth.estaLogado()) {
     <section class="alerta">
       <div>
         <h2>Acompanhe seu negócio de perto</h2>

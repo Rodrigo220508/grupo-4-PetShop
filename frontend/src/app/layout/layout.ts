@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { AuthMockService } from '../core/auth/auth-mock.service';
+import { AuthService } from '../core/auth/auth.service';
 import { DialogoConfirmacao } from '../core/ui/dialogo-confirmacao/dialogo-confirmacao';
 
 @Component({
@@ -11,6 +11,6 @@ import { DialogoConfirmacao } from '../core/ui/dialogo-confirmacao/dialogo-confi
   styleUrl: './layout.css',
 })
 export class Layout {
-  protected readonly auth = inject(AuthMockService);
+  protected readonly auth = inject(AuthService);
   protected readonly nomeSistema = 'PetShop';
 }

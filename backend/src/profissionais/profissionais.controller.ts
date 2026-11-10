@@ -10,12 +10,20 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Perfis } from '../auth/decorators/perfis.decorator';
 import { CreateProfissionalDto } from './dto/create-profissional.dto';
 import { UpdateProfissionalDto } from './dto/update-profissional.dto';
 import { ProfissionaisService } from './profissionais.service';
 
 @ApiTags('Profissionais')
+@ApiBearerAuth()
 @Controller('profissionais')
 export class ProfissionaisController {
   constructor(private readonly profissionaisService: ProfissionaisService) {}
@@ -38,6 +46,7 @@ export class ProfissionaisController {
     return this.profissionaisService.buscarPorId(id);
   }
 
+  @Perfis('admin', 'atendente')
   @Post()
   @ApiOperation({ summary: 'Cadastra um profissional' })
   @ApiResponse({ status: 201, description: 'Profissional criado' })
@@ -47,12 +56,14 @@ export class ProfissionaisController {
     return this.profissionaisService.criar(dto);
   }
 
+  @Perfis('admin', 'atendente')
   @Patch(':id')
   @ApiOperation({ summary: 'Atualiza um profissional' })
   atualizar(@Param('id') id: string, @Body() dto: UpdateProfissionalDto) {
     return this.profissionaisService.atualizar(id, dto);
   }
 
+  @Perfis('admin')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Exclui um profissional' })

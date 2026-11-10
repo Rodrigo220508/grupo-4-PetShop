@@ -1,10 +1,12 @@
 
+import { DatePipe } from '@angular/common';
 import { Component, input, output } from '@angular/core';
 import { Pet } from '../pet.model';
 
 @Component({
   selector: 'app-pet-card',
   standalone: true,
+  imports: [DatePipe],
   templateUrl: './pet-card.html',
   styleUrl: './pet-card.css',
 })

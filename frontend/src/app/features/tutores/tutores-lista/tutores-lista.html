@@ -6,9 +6,11 @@
       <p>Gerencie os tutores cadastrados no Pet Shop.</p>
     </div>
 
-    <a class="botao" routerLink="/tutores/novo">
-      Novo tutor
-    </a>
+    @if (auth.podeEditar()) {
+      <a class="botao" routerLink="/tutores/novo">
+        Novo tutor
+      </a>
+    }
   </header>
 
   <div class="filtro">
