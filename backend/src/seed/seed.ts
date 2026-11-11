@@ -14,35 +14,57 @@ import { ServicoSchema } from '../servicos/schemas/servico.schema';
 import { ProfissionalSchema } from '../profissionais/schemas/profissional.schema';
 import { UsuarioSchema } from '../usuarios/schemas/usuario.schema';
 
+// Produtos vendidos no balcão do pet shop
 const produtos = [
   {
-    nome: 'Arroz integral 1 kg',
-    preco: 8.9,
-    estoque: 25,
+    nome: 'Ração Premium Cães Adultos 15 kg',
+    descricao: 'Ração seca para cães adultos de porte médio e grande',
+    preco: 189.9,
+    estoque: 12,
     categoria: 'alimento',
   },
   {
-    nome: 'Feijão preto 1 kg',
-    preco: 7.5,
-    estoque: 40,
+    nome: 'Ração Gatos Castrados 10 kg',
+    descricao: 'Ração seca para gatos castrados',
+    preco: 159.9,
+    estoque: 8,
     categoria: 'alimento',
   },
   {
-    nome: 'Sabonete neutro',
-    preco: 2.99,
-    estoque: 60,
+    nome: 'Petisco Bifinho de Frango 500 g',
+    preco: 24.9,
+    estoque: 30,
+    categoria: 'alimento',
+  },
+  {
+    nome: 'Shampoo Neutro para Pets 500 ml',
+    preco: 29.9,
+    estoque: 20,
     categoria: 'higiene',
   },
   {
-    nome: 'Detergente 500 ml',
-    preco: 3.49,
+    nome: 'Areia Higiênica para Gatos 4 kg',
+    preco: 22.5,
     estoque: 0,
+    categoria: 'higiene',
+  },
+  {
+    nome: 'Eliminador de Odores 1 L',
+    descricao: 'Limpa e tira o cheiro de xixi de pisos e caminhas',
+    preco: 34.9,
+    estoque: 15,
     categoria: 'limpeza',
   },
   {
-    nome: 'Pilha AA (par)',
-    preco: 12.0,
-    estoque: 15,
+    nome: 'Coleira Antipulgas',
+    preco: 89.9,
+    estoque: 10,
+    categoria: 'outros',
+  },
+  {
+    nome: 'Bolinha de Borracha',
+    preco: 14.9,
+    estoque: 25,
     categoria: 'outros',
   },
 ];
