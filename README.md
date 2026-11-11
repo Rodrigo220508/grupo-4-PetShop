@@ -39,6 +39,8 @@ Descreva em 3 a 5 linhas o problema que o sistema resolve, para quem e qual o va
 
 ## Como rodar
 
+> **O grupo usa um banco MongoDB Atlas (na nuvem).** Depois de clonar, siga o passo a passo em [CONFIGURAR-BANCO.md](CONFIGURAR-BANCO.md), que explica como colocar o arquivo `.env` recebido de um colega. Os comandos abaixo são para quem usa o MongoDB instalado no próprio computador.
+
 ```bash
 # 1) Back-end
 cd backend

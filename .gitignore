@@ -15,3 +15,6 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 *.log
+
+# Cache de compilação do TypeScript
+*.tsbuildinfo
